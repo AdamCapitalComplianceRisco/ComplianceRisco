@@ -1,18 +1,12 @@
 import streamlit as st
-import page1
-import page2
-import page3
+import Rolagem
 
-st.set_page_config(page_title="App with Sidebar Navigation", page_icon="🎫", layout="wide")
+st.set_page_config(page_title="Menu Principal", page_icon="🎫", layout="wide")
 
 # Barra lateral para navegação
-st.sidebar.title("Navegação")
-page = st.sidebar.selectbox("Escolha uma página", ["Rolagem", "PNL", "Controle de Margem"])
+st.sidebar.title("Menu de Navegação")
+page = st.sidebar.selectbox("Escolha uma página", ["Rolagem"])
 
 # Carregar o script correspondente
 if page == "Rolagem":
-    page1.show()
-elif page == "PNL":
-    page2.show()
-elif page == "Controle de Margem":
-    page3.show()
+    Rolagem.show()
