@@ -11,7 +11,7 @@ st.set_page_config(page_title="Rolagem", page_icon="🎫")
 st.title("Rolagem")
 st.write(
     """
-    Aqui será possível verificar as rolagens dos Ativos
+    Aqui será possível verificar as rolagens dos Ativos(Last Date Tradeble)
     """
 )
 
