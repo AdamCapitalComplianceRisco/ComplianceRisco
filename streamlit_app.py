@@ -15,17 +15,24 @@ local_css("styles.css")
 
 # Configuração do aplicativo Streamlit
 st.set_page_config(page_title="Rolagem", page_icon="🎫", layout="wide")
+
+# Título e Faixa
 st.title("Rolagem")
+st.markdown(
+    """
+    <div style='border-bottom: 5px solid #1f77b4; margin-bottom: 10px;'></div>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.write(
     """
     Aqui será possível verificar as rolagens dos Ativos (Last Date Tradeble).
     """
 )
 
-
 # Create a random Pandas dataframe with existing tickets.
 if "df" not in st.session_state:
-
     # Set seed for reproducibility.
     np.random.seed(42)
 
@@ -70,16 +77,15 @@ if "df" not in st.session_state:
     # page runs). This ensures our data is persisted when the app updates.
     st.session_state.df = df
 
-
 # Show a section to add a new ticket.
-st.header("Add a ticket")
+st.header("Adicionar um ticket")
 
 # We're adding tickets via an `st.form` and some input widgets. If widgets are used
 # in a form, the app will only rerun once the submit button is pressed.
 with st.form("add_ticket_form"):
-    issue = st.text_area("Describe the issue")
-    priority = st.selectbox("Priority", ["High", "Medium", "Low"])
-    submitted = st.form_submit_button("Submit")
+    issue = st.text_area("Descreva o problema")
+    priority = st.selectbox("Prioridade", ["Alta", "Média", "Baixa"])
+    submitted = st.form_submit_button("Enviar")
 
 if submitted:
     # Make a dataframe for the new ticket and append it to the dataframe in session
@@ -91,7 +97,7 @@ if submitted:
             {
                 "ID": f"TICKET-{recent_ticket_number+1}",
                 "Issue": issue,
-                "Status": "Open",
+                "Status": "Aberto",
                 "Priority": priority,
                 "Date Submitted": today,
             }
@@ -99,57 +105,64 @@ if submitted:
     )
 
     # Show a little success message.
-    st.write("Ticket submitted! Here are the ticket details:")
+    st.write("Ticket enviado! Aqui estão os detalhes do ticket:")
     st.dataframe(df_new, use_container_width=True, hide_index=True)
     st.session_state.df = pd.concat([df_new, st.session_state.df], axis=0)
 
 # Show section to view and edit existing tickets in a table.
-st.header("Existing tickets")
-st.write(f"Number of tickets: `{len(st.session_state.df)}`")
+st.header("Tickets existentes")
+st.write(f"Número de tickets: `{len(st.session_state.df)}`")
 
 st.info(
-    "You can edit the tickets by double clicking on a cell. Note how the plots below "
-    "update automatically! You can also sort the table by clicking on the column headers.",
+    "Você pode editar os tickets clicando duas vezes em uma célula. Note como os gráficos abaixo "
+    "atualizam automaticamente! Você também pode ordenar a tabela clicando nos cabeçalhos das colunas.",
     icon="✍️",
 )
 
-# Show the tickets dataframe with `st.data_editor`. This lets the user edit the table
-# cells. The edited data is returned as a new dataframe.
-edited_df = st.data_editor(
-    st.session_state.df,
-    use_container_width=True,
-    hide_index=True,
-    column_config={
-        "Status": st.column_config.SelectboxColumn(
-            "Status",
-            help="Ticket status",
-            options=["Open", "In Progress", "Closed"],
-            required=True,
-        ),
-        "Priority": st.column_config.SelectboxColumn(
-            "Priority",
-            help="Priority",
-            options=["High", "Medium", "Low"],
-            required=True,
-        ),
-    },
-    # Disable editing the ID and Date Submitted columns.
-    disabled=["ID", "Date Submitted"],
-)
+# Use colunas para a caixa de seleção e a tabela
+col1, col2 = st.columns([1, 3])
+
+with col1:
+    st.checkbox("Mostrar tickets fechados")
+
+with col2:
+    # Show the tickets dataframe with `st.data_editor`. This lets the user edit the table
+    # cells. The edited data is returned as a new dataframe.
+    edited_df = st.data_editor(
+        st.session_state.df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Status": st.column_config.SelectboxColumn(
+                "Status",
+                help="Status do ticket",
+                options=["Aberto", "Em Progresso", "Fechado"],
+                required=True,
+            ),
+            "Priority": st.column_config.SelectboxColumn(
+                "Prioridade",
+                help="Prioridade",
+                options=["Alta", "Média", "Baixa"],
+                required=True,
+            ),
+        },
+        # Disable editing the ID and Date Submitted columns.
+        disabled=["ID", "Date Submitted"],
+    )
 
 # Show some metrics and charts about the ticket.
-st.header("Statistics")
+st.header("Estatísticas")
 
 # Show metrics side by side using `st.columns` and `st.metric`.
 col1, col2, col3 = st.columns(3)
-num_open_tickets = len(st.session_state.df[st.session_state.df.Status == "Open"])
-col1.metric(label="Number of open tickets", value=num_open_tickets, delta=10)
-col2.metric(label="First response time (hours)", value=5.2, delta=-1.5)
-col3.metric(label="Average resolution time (hours)", value=16, delta=2)
+num_open_tickets = len(st.session_state.df[st.session_state.df.Status == "Aberto"])
+col1.metric(label="Número de tickets abertos", value=num_open_tickets, delta=10)
+col2.metric(label="Tempo de primeira resposta (horas)", value=5.2, delta=-1.5)
+col3.metric(label="Tempo médio de resolução (horas)", value=16, delta=2)
 
 # Show two Altair charts using `st.altair_chart`.
 st.write("")
-st.write("##### Ticket status per month")
+st.write("##### Status dos tickets por mês")
 status_plot = (
     alt.Chart(edited_df)
     .mark_bar()
@@ -165,7 +178,7 @@ status_plot = (
 )
 st.altair_chart(status_plot, use_container_width=True, theme="streamlit")
 
-st.write("##### Current ticket priorities")
+st.write("##### Prioridades dos tickets atuais")
 priority_plot = (
     alt.Chart(edited_df)
     .mark_arc()
