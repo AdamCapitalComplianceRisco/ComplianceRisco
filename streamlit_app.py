@@ -6,14 +6,22 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Show app title and description.
-st.set_page_config(page_title="Rolagem", page_icon="🎫")
+# Carregar o arquivo CSS
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+local_css("styles.css")
+
+# Configuração do aplicativo Streamlit
+st.set_page_config(page_title="Rolagem", page_icon="🎫", layout="wide")
 st.title("Rolagem")
 st.write(
     """
-    Aqui será possível verificar as rolagens dos Ativos(Last Date Tradeble)
+    Aqui será possível verificar as rolagens dos Ativos (Last Date Tradeble).
     """
 )
+
 
 # Create a random Pandas dataframe with existing tickets.
 if "df" not in st.session_state:
