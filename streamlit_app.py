@@ -20,7 +20,7 @@ st.set_page_config(page_title="Rolagem", page_icon="🎫", layout="wide")
 st.title("Rolagem")
 st.markdown(
     """
-    <div style='border-bottom: 5px solid #1f77b4; margin-bottom: 10px;'></div>
+    <div style='border-bottom: 5px solid rgb(49, 74, 96); margin-bottom: 10px;'></div>
     """,
     unsafe_allow_html=True,
 )
