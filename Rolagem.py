@@ -1,5 +1,6 @@
 import datetime
 import random
+
 import altair as alt
 import numpy as np
 import pandas as pd
@@ -102,7 +103,7 @@ def show():
     st.info(
         "Você pode editar os tickets clicando duas vezes em uma célula. Note como os gráficos abaixo "
         "são atualizados automaticamente! Você também pode classificar a tabela clicando nos cabeçalhos das colunas.",
-        icon="✍",
+        icon="✍️",
     )
 
     # Layout para tabela de tickets e caixa de seleção lado a lado
