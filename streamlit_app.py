@@ -24,7 +24,7 @@ st.write(
 )
 
 # Directory where CSV files are stored
-csv_directory = "Z:/Riscos/Planilhas/Atuais/Power BI\Bases Carteiras"
+csv_directory = "Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras"
 
 # Get the latest CSV file
 latest_csv_file = get_latest_csv_file(csv_directory)
