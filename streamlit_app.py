@@ -2,37 +2,52 @@ import os
 import glob
 import pandas as pd
 import streamlit as st
+import re
+from datetime import datetime
 
 # Define o caminho do diretório dos arquivos TXT
-txt_directory = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras'
+txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras'
 
-# Verifique se o diretório está correto
-st.write(f"Diretório sendo verificado: {txt_directory}")
+# Função para extrair a data do nome do arquivo
+def extract_date_from_filename(filename):
+    # Use uma expressão regular para encontrar a data no nome do arquivo
+    match = re.search(r'(\d{2}[A-Za-z]{3}\d{4})', filename)
+    if match:
+        return datetime.strptime(match.group(1), '%d%b%Y')
+    return None
 
-# Função para obter o arquivo TXT mais recente
-def get_latest_txt_file(directory):
-    # Verifique o conteúdo do diretório
-    st.write(f"Listando arquivos no diretório: {directory}")
-
+# Função para obter o arquivo TXT mais relevante com base na data
+def get_relevant_txt_file(directory, target_date):
     list_of_files = glob.glob(os.path.join(directory, "*.txt"))
 
-    # Verifique se a lista de arquivos está vazia
     if not list_of_files:
         st.error("Nenhum arquivo TXT encontrado no diretório especificado.")
-        st.write("Arquivos encontrados no diretório:", list_of_files)  # Lista vazia
         return None
 
-    # Encontre o arquivo mais recente
-    latest_file = max(list_of_files, key=os.path.getctime)
+    # Filtra e classifica arquivos com base na data extraída
+    files_with_dates = [(file, extract_date_from_filename(os.path.basename(file))) for file in list_of_files]
+    files_with_dates = [file for file in files_with_dates if file[1] is not None]
+
+    # Filtra arquivos com datas antes da data alvo e seleciona o mais recente
+    relevant_files = [file for file in files_with_dates if file[1] <= target_date]
+
+    if not relevant_files:
+        st.error("Nenhum arquivo relevante encontrado para a data especificada.")
+        return None
+
+    latest_file = max(relevant_files, key=lambda x: x[1])[0]
     return latest_file
 
-# Obtém o arquivo TXT mais recente
-latest_txt_file = get_latest_txt_file(txt_directory)
+# Define a data alvo (último dia do mês anterior, ou qualquer outra data desejada)
+target_date = datetime.strptime('26Jul2024', '%d%b%Y')
 
-if latest_txt_file:
+# Obtém o arquivo TXT relevante
+relevant_txt_file = get_relevant_txt_file(txt_directory, target_date)
+
+if relevant_txt_file:
     try:
         # Ajuste o separador conforme necessário; exemplo usa '\t' para TSV
-        latest_txt_data = pd.read_csv(latest_txt_file, delimiter='\t')  # ou use o delimitador adequado para o seu arquivo
+        latest_txt_data = pd.read_csv(relevant_txt_file, delimiter='\t')  # ou use o delimitador adequado para o seu arquivo
 
         # Seleciona as colunas necessárias do TXT
         selected_columns = ["ProductClass"]
@@ -51,7 +66,7 @@ if latest_txt_file:
         st.error(f"Erro ao ler o arquivo TXT: {e}")
 
 else:
-    st.stop()  # Para a execução do script se não houver arquivos TXT
+    st.stop()  # Para a execução do script se não houver arquivos TXT relevantes
 
 # Restante do código da aplicação Streamlit
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
