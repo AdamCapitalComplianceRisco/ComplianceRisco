@@ -44,10 +44,10 @@ if os.path.exists(file_path):
             selected_data = txt_data[['ProductClass']].copy()
 
             # Add new columns with empty values
-            selected_data["Primeiro Aviso"] = ""  # Add the appropriate value here
-            selected_data["Último Trade"] = ""  # Add the appropriate value here
-            selected_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
-            selected_data["Entrega Física"] = ""  # Add the appropriate value here
+            selected_data["Primeiro Aviso"] = "0"  # Add the appropriate value here
+            selected_data["Último Trade"] = "0"  # Add the appropriate value here
+            selected_data["Dias Úteis Para Liquidação"] = "0"  # Add the appropriate value here
+            selected_data["Entrega Física"] = "0"  # Add the appropriate value here
         else:
             st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
     except Exception as e:
