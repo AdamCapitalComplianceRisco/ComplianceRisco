@@ -21,7 +21,7 @@ st.write(
 )
 
 # Define the directory path for the TXT files
-txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras\AllTradingDesksVaRStress26Jul2024.txt'
+txt_directory = r'Z:/RiscosPlanilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
 
 # Function to get the latest TXT file based on the name
 def get_latest_txt_file(directory):
