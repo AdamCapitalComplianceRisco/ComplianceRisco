@@ -6,27 +6,28 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Define CSS styles
+# Show app title and description.
+st.set_page_config(page_title="Rolagem", page_icon="🎫")
+
+# CSS styles
 css_styles = """
-    <style>
-    .container {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding-left: 200rem;
-        padding-right: 200rem;
-    }
-    </style>
+<style>
+.container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 200rem;
+    padding-right: 200rem;
+}
+</style>
 """
 
 # Apply CSS styles
 st.markdown(css_styles, unsafe_allow_html=True)
 
-# Show app title and description.
-st.set_page_config(page_title="Rolagem", page_icon="🎫")
 st.title("Rolagem")
 st.write(
     """
-    Aqui será possível verificar as rolagens dos Ativos (Last Date Tradeble)
+    Aqui será possível verificar as rolagens dos Ativos(Last Date Tradeble)
     """
 )
 
@@ -76,6 +77,7 @@ if "df" not in st.session_state:
     # Save the dataframe in session state (a dictionary-like object that persists across
     # page runs). This ensures our data is persisted when the app updates.
     st.session_state.df = df
+
 
 # Show a section to add a new ticket.
 st.header("Add a ticket")
