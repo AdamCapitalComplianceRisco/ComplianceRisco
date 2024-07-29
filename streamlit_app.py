@@ -1,8 +1,5 @@
-import datetime
 import pandas as pd
 import streamlit as st
-import os
-import glob
 
 # Configure the page
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
@@ -20,72 +17,39 @@ st.write(
     """
 )
 
-# Define the directory path for the TXT files
-txt_directory = r'Z:/RiscosPlanilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
+# Define the path for the specific TXT file
+file_path = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras\AllTradingDesksVaRStress26Jul2024.txt'
 
-# Function to get the latest TXT file based on the name
-def get_latest_txt_file(directory):
-    # List all TXT files in the directory
-    list_of_files = glob.glob(os.path.join(directory, "*.txt"))
+# Read data from the specific TXT file
+try:
+    # Load the data from the TXT file
+    txt_data = pd.read_csv(file_path, delimiter='\t')  # Adjust the delimiter as needed
 
-    if not list_of_files:
-        st.error("Nenhum arquivo TXT encontrado no diretório especificado.")
-        return None
-
-    # Find the most recent file based on the date in the filename
-    latest_file = None
-    latest_date = None
-    for file in list_of_files:
-        file_name = os.path.basename(file)
-        # Extract date from the filename
-        try:
-            date_str = file_name.split("Stress")[-1].replace(".txt", "")
-            file_date = datetime.datetime.strptime(date_str, "%d%b%Y")
-            # Update the latest file if the current file is newer
-            if latest_date is None or file_date > latest_date:
-                latest_date = file_date
-                latest_file = file
-        except ValueError:
-            continue
-
-    if latest_file is None:
-        st.error("Nenhum arquivo TXT com data válida encontrado no diretório.")
-
-    return latest_file
-
-# Get the latest TXT file
-latest_txt_file = get_latest_txt_file(txt_directory)
-
-if latest_txt_file:
-    # Read data from the latest TXT file
-    try:
-        latest_txt_data = pd.read_csv(latest_txt_file, delimiter='\t')  # Adjust the delimiter as needed
-
+    # Check if 'ProductClass' column exists
+    if 'ProductClass' in txt_data.columns:
         # Select the necessary column
-        selected_columns = ["ProductClass"]
-        if all(col in latest_txt_data.columns for col in selected_columns):
-            selected_txt_data = latest_txt_data[selected_columns].copy()
+        selected_data = txt_data[['ProductClass']].copy()
 
-            # Add new columns with empty values
-            selected_txt_data["Primeiro Aviso"] = ""  # Add the appropriate value here
-            selected_txt_data["Último Trade"] = ""  # Add the appropriate value here
-            selected_txt_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
-            selected_txt_data["Entrega Física"] = ""  # Add the appropriate value here
+        # Add new columns with empty values
+        selected_data["Primeiro Aviso"] = ""  # Add the appropriate value here
+        selected_data["Último Trade"] = ""  # Add the appropriate value here
+        selected_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
+        selected_data["Entrega Física"] = ""  # Add the appropriate value here
 
-            # Display the selected data in a table on Streamlit
-            st.dataframe(selected_txt_data, use_container_width=True, hide_index=True)
+        # Display the selected data in a table on Streamlit
+        st.dataframe(selected_data, use_container_width=True, hide_index=True)
+    else:
+        st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
 
-        else:
-            st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
-
-    except Exception as e:
-        st.error(f"Ocorreu um erro ao ler o arquivo TXT: {e}")
-
-else:
-    st.stop()  # Stop execution if no TXT files are found
+except Exception as e:
+    st.error(f"Ocorreu um erro ao ler o arquivo TXT: {e}")
 
 # Create a random Pandas dataframe with existing tickets.
 if "df" not in st.session_state:
+    import numpy as np
+    import datetime
+    import random
+
     np.random.seed(42)
     issue_descriptions = [
         "Network connectivity issues in the office",
