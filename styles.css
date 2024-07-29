@@ -1,27 +1,7 @@
-css_styles = """
-<style>
-/* Ajusta a largura da tela para a largura total da viewport */
-.container {
+/* styles.css */
+.main .block-container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    max-width: 100% !important;
     width: 100% !important;
-    max-width: 100% !important;
 }
-
-/* Ajusta o padding para garantir que o conteúdo use mais da largura disponível */
-[data-testid="main"] {
-    max-width: 100% !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
-
-/* Ajusta o padding dos containers para o conteúdo */
-.css-1v3fvcr {
-    padding-left: 1rem;
-    padding-right: 1rem;
-}
-
-/* Ajusta o padding para o título e o conteúdo */
-.css-1dpd5kj {
-    padding: 1rem;
-}
-</style>
-"""
