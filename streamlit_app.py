@@ -1,6 +1,5 @@
 import datetime
 import random
-
 import altair as alt
 import numpy as np
 import pandas as pd
@@ -9,18 +8,10 @@ import streamlit as st
 # Configure the page
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
 
-# Apply CSS styles
-css_styles = """
-<style>
-/* Aumentar a largura da tela */
-.main .block-container {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    max-width: 100% !important;
-}
-</style>
-"""
-st.markdown(css_styles, unsafe_allow_html=True)
+# Apply CSS styles from a file
+with open("styles.css") as f:
+    css_styles = f.read()
+st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
 
 # Show app title and description.
 st.title("Rolagem")
