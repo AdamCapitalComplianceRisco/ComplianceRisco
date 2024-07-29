@@ -18,8 +18,16 @@ st.write(
     """
 )
 
+import os
+
 # Define the path for the specific TXT file
 file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
+
+# Check if the file exists
+if os.path.exists(file_path):
+    print("O arquivo foi encontrado com sucesso!")
+else:
+    print(f"O arquivo não foi encontrado no caminho: {file_path}")
 
 # Initialize DataFrame for selected data
 selected_data = pd.DataFrame()
