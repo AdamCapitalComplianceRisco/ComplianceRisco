@@ -25,11 +25,6 @@ st.title("Meu Aplicativo Streamlit")
 # Exemplo de conteúdo
 st.write("Este é um exemplo de aplicativo Streamlit.")
 
-# Outros componentes do seu aplicativo Streamlit
-# Adicione aqui os elementos do seu app, por exemplo:
-# st.text_input("Digite algo")
-# st.button("Clique aqui")
-
 
 # Show app title and description.
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
