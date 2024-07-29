@@ -6,6 +6,23 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+import streamlit as st
+import os
+
+# Caminho para o arquivo CSS
+css_path = os.path.join(os.path.dirname(__file__), 'styles.css')
+
+# Carrega o conteúdo do arquivo CSS
+with open(css_path) as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# Título do aplicativo
+st.title("Meu Aplicativo Streamlit")
+
+# Exemplo de conteúdo
+st.write("Este é um exemplo de aplicativo Streamlit.")
+
+
 # Show app title and description.
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
 st.title("Rolagem")
