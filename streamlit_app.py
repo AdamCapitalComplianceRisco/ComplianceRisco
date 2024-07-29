@@ -1,6 +1,5 @@
 import datetime
 import random
-import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -24,54 +23,48 @@ st.write(
 )
 
 # Directory where CSV files are stored
-csv_directory = "Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras"
+csv_directory = "/caminho/para/seus/arquivos/csv"
+
+# Function to get the latest CSV file
+def get_latest_csv_file(directory):
+    list_of_files = glob.glob(os.path.join(directory, "*.csv"))
+    latest_file = max(list_of_files, key=os.path.getctime)
+    return latest_file
 
 # Get the latest CSV file
 latest_csv_file = get_latest_csv_file(csv_directory)
 latest_csv_data = pd.read_csv(latest_csv_file)
 
-# Add the fourth column from the latest CSV file to the existing dataframe
+# Select the required columns from the CSV file
+csv_columns = ["ProductClass"]
+csv_data = latest_csv_data[csv_columns]
+
+# Add additional columns with data from another source
+csv_data["Primeiro Aviso"] = "Dados de outra fonte"
+csv_data["Último Trade"] = "Dados de outra fonte"
+csv_data["Dias Úteis Para Liquidação"] = "Dados de outra fonte"
+csv_data["Entrega Física"] = "Dados de outra fonte"
+
+# Create the main dataframe for the application
 if "df" not in st.session_state:
     # Set seed for reproducibility.
     np.random.seed(42)
 
-    # Make up some fake issue descriptions.
-    issue_descriptions = [
-        "Network connectivity issues in the office",
-        "Software application crashing on startup",
-        "Printer not responding to print commands",
-        "Email server downtime",
-        "Data backup failure",
-        "Login authentication problems",
-        "Website performance degradation",
-        "Security vulnerability identified",
-        "Hardware malfunction in the server room",
-        "Employee unable to access shared files",
-        "Database connection failure",
-        "Mobile application not syncing data",
-        "VoIP phone system issues",
-        "VPN connection problems for remote employees",
-        "System updates causing compatibility issues",
-        "File server running out of storage space",
-        "Intrusion detection system alerts",
-        "Inventory management system errors",
-        "Customer data not loading in CRM",
-        "Collaboration tool not sending notifications",
-    ]
-
     # Generate the dataframe with 100 rows/tickets.
     data = {
         "ID": [f"TICKET-{i}" for i in range(1100, 1000, -1)],
-        "Issue": np.random.choice(issue_descriptions, size=100),
+        "Issue": np.random.choice(["Network connectivity issues", "Software application crashing", "Printer not responding"], size=100),
         "Status": np.random.choice(["Open", "In Progress", "Closed"], size=100),
         "Priority": np.random.choice(["High", "Medium", "Low"], size=100),
         "Date Submitted": [
             datetime.date(2023, 6, 1) + datetime.timedelta(days=random.randint(0, 182))
             for _ in range(100)
         ],
-        "CSV Data": latest_csv_data.iloc[:, 3].values  # Assuming the 4th column
     }
     df = pd.DataFrame(data)
+
+    # Merge with CSV data
+    df = pd.concat([df, csv_data], axis=1)
 
     # Save the dataframe in session state (a dictionary-like object that persists across
     # page runs). This ensures our data is persisted when the app updates.
@@ -100,7 +93,11 @@ if submitted:
                 "Status": "Open",
                 "Priority": priority,
                 "Date Submitted": today,
-                "CSV Data": ""  # Add empty value for new entry
+                "ProductClass": "",
+                "Primeiro Aviso": "",
+                "Último Trade": "",
+                "Dias Úteis Para Liquidação": "",
+                "Entrega Física": ""
             }
         ]
     )
