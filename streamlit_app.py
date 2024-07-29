@@ -1,5 +1,4 @@
 import datetime
-import random
 import altair as alt
 import numpy as np
 import pandas as pd
@@ -13,7 +12,6 @@ txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras'
 # Função para obter o arquivo TXT mais recente
 def get_latest_txt_file(directory):
     list_of_files = glob.glob(os.path.join(directory, "*.txt"))
-    print(f"Arquivos encontrados: {list_of_files}")  # Adicione esta linha para depuração
     if not list_of_files:
         st.error("Nenhum arquivo TXT encontrado no diretório especificado.")
         return None
@@ -24,7 +22,6 @@ def get_latest_txt_file(directory):
 latest_txt_file = get_latest_txt_file(txt_directory)
 
 if latest_txt_file:
-    # Lê os dados do arquivo TXT mais recente
     try:
         # Ajuste o separador conforme necessário; exemplo usa '\t' para TSV
         latest_txt_data = pd.read_csv(latest_txt_file, delimiter='\t')  # ou use o delimitador adequado para o seu arquivo
@@ -33,11 +30,11 @@ if latest_txt_file:
         selected_columns = ["ProductClass"]
         selected_txt_data = latest_txt_data[selected_columns]
 
-        # Adiciona as novas colunas com valores fictícios ou extraídos de outra fonte
-        selected_txt_data["Primeiro Aviso"] = ""  # Adicione o valor adequado aqui
-        selected_txt_data["Último Trade"] = ""  # Adicione o valor adequado aqui
-        selected_txt_data["Dias Úteis Para Liquidação"] = ""  # Adicione o valor adequado aqui
-        selected_txt_data["Entrega Física"] = ""  # Adicione o valor adequado aqui
+        # Adiciona as novas colunas com valores fictícios ou placeholders
+        selected_txt_data["Primeiro Aviso"] = "Placeholder"  # Substitua com dados reais
+        selected_txt_data["Último Trade"] = "Placeholder"  # Substitua com dados reais
+        selected_txt_data["Dias Úteis Para Liquidação"] = "Placeholder"  # Substitua com dados reais
+        selected_txt_data["Entrega Física"] = "Placeholder"  # Substitua com dados reais
 
         # Mostra os dados selecionados em uma tabela no Streamlit
         st.dataframe(selected_txt_data, use_container_width=True, hide_index=True)
