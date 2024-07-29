@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 # Define o caminho do diretório dos arquivos TXT
-txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras'
+txt_directory = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras'
 
 # Verifique se o diretório está correto
 st.write(f"Diretório sendo verificado: {txt_directory}")
