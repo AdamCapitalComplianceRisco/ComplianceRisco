@@ -4,16 +4,25 @@ import pandas as pd
 import streamlit as st
 
 # Define o caminho do diretório dos arquivos TXT
-txt_directory = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras'
+txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras'
+
+# Verifique se o diretório está correto
+st.write(f"Diretório sendo verificado: {txt_directory}")
 
 # Função para obter o arquivo TXT mais recente
 def get_latest_txt_file(directory):
+    # Verifique o conteúdo do diretório
+    st.write(f"Listando arquivos no diretório: {directory}")
+
     list_of_files = glob.glob(os.path.join(directory, "*.txt"))
+
+    # Verifique se a lista de arquivos está vazia
     if not list_of_files:
         st.error("Nenhum arquivo TXT encontrado no diretório especificado.")
-        # Adiciona depuração para ver quais arquivos estão no diretório
-        st.write("Arquivos encontrados no diretório:", list_of_files)
+        st.write("Arquivos encontrados no diretório:", list_of_files)  # Lista vazia
         return None
+
+    # Encontre o arquivo mais recente
     latest_file = max(list_of_files, key=os.path.getctime)
     return latest_file
 
@@ -151,4 +160,3 @@ priority_plot = (
     )
 )
 st.altair_chart(priority_plot, use_container_width=True, theme="streamlit")
-
