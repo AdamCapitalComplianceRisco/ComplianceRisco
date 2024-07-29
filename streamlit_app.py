@@ -1,20 +1,53 @@
 import datetime
 import random
+import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
 import os
 import glob
 
-# Configure the page
-st.set_page_config(page_title="Rolagem", page_icon="🎫")
+# Define o caminho do diretório dos CSVs
+csv_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras'
 
-# Apply CSS styles from a file
-with open("styles.css") as f:
-    css_styles = f.read()
-st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
+# Função para obter o arquivo CSV mais recente
+def get_latest_csv_file(directory):
+    list_of_files = glob.glob(os.path.join(directory, "*.csv"))
+    if not list_of_files:
+        st.error("Nenhum arquivo CSV encontrado no diretório especificado.")
+        return None
+    latest_file = max(list_of_files, key=os.path.getctime)
+    return latest_file
 
+# Obtém o arquivo CSV mais recente
+latest_csv_file = get_latest_csv_file(csv_directory)
+
+if latest_csv_file:
+    # Lê os dados do arquivo CSV mais recente
+    latest_csv_data = pd.read_csv(latest_csv_file)
+
+    # Seleciona as colunas necessárias do CSV
+    selected_columns = ["ProductClass"]
+    selected_csv_data = latest_csv_data[selected_columns]
+
+    # Adiciona as novas colunas
+    selected_csv_data["Primeiro Aviso"] = ""  # Adicione o valor adequado aqui
+    selected_csv_data["Último Trade"] = ""  # Adicione o valor adequado aqui
+    selected_csv_data["Dias Úteis Para Liquidação"] = ""  # Adicione o valor adequado aqui
+    selected_csv_data["Entrega Física"] = ""  # Adicione o valor adequado aqui
+
+    # Mostra os dados selecionados em uma tabela no Streamlit
+    st.dataframe(selected_csv_data, use_container_width=True, hide_index=True)
+
+    # Abaixo está o restante do seu código que adiciona entradas manuais e exibe gráficos.
+    # ...
+
+else:
+    st.stop()  # Para a execução do script se não houver arquivos CSV
+
+# Restante do código da aplicação Streamlit
 # Show app title and description.
+st.set_page_config(page_title="Rolagem", page_icon="🎫")
 st.title("Rolagem")
 st.write(
     """
@@ -22,67 +55,15 @@ st.write(
     """
 )
 
-# Directory where CSV files are stored
-csv_directory = "Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras"
-
-# Function to get the latest CSV file
-def get_latest_csv_file(directory):
-    list_of_files = glob.glob(os.path.join(directory, "*.csv"))
-    latest_file = max(list_of_files, key=os.path.getctime)
-    return latest_file
-
-# Get the latest CSV file
-latest_csv_file = get_latest_csv_file(csv_directory)
-latest_csv_data = pd.read_csv(latest_csv_file)
-
-# Select the required columns from the CSV file
-csv_columns = ["ProductClass"]
-csv_data = latest_csv_data[csv_columns]
-
-# Add additional columns with data from another source
-csv_data["Primeiro Aviso"] = "Dados de outra fonte"
-csv_data["Último Trade"] = "Dados de outra fonte"
-csv_data["Dias Úteis Para Liquidação"] = "Dados de outra fonte"
-csv_data["Entrega Física"] = "Dados de outra fonte"
-
-# Create the main dataframe for the application
-if "df" not in st.session_state:
-    # Set seed for reproducibility.
-    np.random.seed(42)
-
-    # Generate the dataframe with 100 rows/tickets.
-    data = {
-        "ID": [f"TICKET-{i}" for i in range(1100, 1000, -1)],
-        "Issue": np.random.choice(["Network connectivity issues", "Software application crashing", "Printer not responding"], size=100),
-        "Status": np.random.choice(["Open", "In Progress", "Closed"], size=100),
-        "Priority": np.random.choice(["High", "Medium", "Low"], size=100),
-        "Date Submitted": [
-            datetime.date(2023, 6, 1) + datetime.timedelta(days=random.randint(0, 182))
-            for _ in range(100)
-        ],
-    }
-    df = pd.DataFrame(data)
-
-    # Merge with CSV data
-    df = pd.concat([df, csv_data], axis=1)
-
-    # Save the dataframe in session state (a dictionary-like object that persists across
-    # page runs). This ensures our data is persisted when the app updates.
-    st.session_state.df = df
-
 # Show a section to add a new ticket.
 st.header("Add a ticket")
 
-# We're adding tickets via an st.form and some input widgets. If widgets are used
-# in a form, the app will only rerun once the submit button is pressed.
 with st.form("add_ticket_form"):
     issue = st.text_area("Describe the issue")
     priority = st.selectbox("Priority", ["High", "Medium", "Low"])
     submitted = st.form_submit_button("Submit")
 
 if submitted:
-    # Make a dataframe for the new ticket and append it to the dataframe in session
-    # state.
     recent_ticket_number = int(max(st.session_state.df.ID).split("-")[1])
     today = datetime.datetime.now().strftime("%m-%d-%Y")
     df_new = pd.DataFrame(
@@ -93,16 +74,9 @@ if submitted:
                 "Status": "Open",
                 "Priority": priority,
                 "Date Submitted": today,
-                "ProductClass": "",
-                "Primeiro Aviso": "",
-                "Último Trade": "",
-                "Dias Úteis Para Liquidação": "",
-                "Entrega Física": ""
             }
         ]
     )
-
-    # Show a little success message.
     st.write("Ticket submitted! Here are the ticket details:")
     st.dataframe(df_new, use_container_width=True, hide_index=True)
     st.session_state.df = pd.concat([df_new, st.session_state.df], axis=0)
@@ -117,8 +91,7 @@ st.info(
     icon="✍️",
 )
 
-# Show the tickets dataframe with st.data_editor. This lets the user edit the table
-# cells. The edited data is returned as a new dataframe.
+# Show the tickets dataframe with st.data_editor.
 edited_df = st.data_editor(
     st.session_state.df,
     use_container_width=True,
