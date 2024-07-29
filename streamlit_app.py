@@ -38,7 +38,7 @@ def get_relevant_txt_file(directory, target_date):
     latest_file = max(relevant_files, key=lambda x: x[1])[0]
     return latest_file
 
-# Define a data alvo (último dia do mês anterior, ou qualquer outra data desejada)
+# Define a data alvo (exemplo: último dia do mês passado ou qualquer outra data desejada)
 target_date = datetime.strptime('26Jul2024', '%d%b%Y')
 
 # Obtém o arquivo TXT relevante
