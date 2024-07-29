@@ -37,6 +37,7 @@ css_styles = """
 }
 </style>
 """
+
 st.markdown(css_styles, unsafe_allow_html=True)
 
 st.title("Rolagem")
