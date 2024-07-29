@@ -1,10 +1,7 @@
-import datetime
-import altair as alt
-import numpy as np
-import pandas as pd
-import streamlit as st
 import os
 import glob
+import pandas as pd
+import streamlit as st
 
 # Define o caminho do diretório dos arquivos TXT
 txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras'
@@ -14,6 +11,8 @@ def get_latest_txt_file(directory):
     list_of_files = glob.glob(os.path.join(directory, "*.txt"))
     if not list_of_files:
         st.error("Nenhum arquivo TXT encontrado no diretório especificado.")
+        # Adiciona depuração para ver quais arquivos estão no diretório
+        st.write("Arquivos encontrados no diretório:", list_of_files)
         return None
     latest_file = max(list_of_files, key=os.path.getctime)
     return latest_file
@@ -152,3 +151,4 @@ priority_plot = (
     )
 )
 st.altair_chart(priority_plot, use_container_width=True, theme="streamlit")
+
