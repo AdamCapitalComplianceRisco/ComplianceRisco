@@ -6,22 +6,37 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Show app title and description.
+# Configure the page
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
 
-# CSS styles
+# Apply CSS styles
 css_styles = """
 <style>
+/* Ajusta a largura da tela para a largura total da viewport */
 .container {
     width: 100% !important;
     max-width: 100% !important;
-    padding-left: 200rem;
-    padding-right: 200rem;
+}
+
+/* Ajusta o padding para garantir que o conteúdo use mais da largura disponível */
+[data-testid="main"] {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Ajusta o padding dos containers para o conteúdo */
+.css-1v3fvcr {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Ajusta o padding para o título e o conteúdo */
+.css-1dpd5kj {
+    padding: 1rem;
 }
 </style>
 """
-
-# Apply CSS styles
 st.markdown(css_styles, unsafe_allow_html=True)
 
 st.title("Rolagem")
