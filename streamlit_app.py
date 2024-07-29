@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 
 # Define o caminho do diretório dos arquivos TXT
-txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras'
+txt_directory = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras'
 
 # Função para extrair a data do nome do arquivo
 def extract_date_from_filename(filename):
