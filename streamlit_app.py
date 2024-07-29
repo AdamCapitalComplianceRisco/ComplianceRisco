@@ -19,7 +19,7 @@ st.write(
 )
 
 # Define the path for the specific TXT file
-file_path = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras\AllTradingDesksVaRStress26Jul2024.txt'
+file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
 
 # Check if the file exists
 if os.path.exists(file_path):
