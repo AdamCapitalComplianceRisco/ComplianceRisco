@@ -1,9 +1,8 @@
 import datetime
-import random
-import altair as alt
-import numpy as np
 import pandas as pd
 import streamlit as st
+import os
+import glob
 
 # Configure the page
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
@@ -21,13 +20,73 @@ st.write(
     """
 )
 
+# Define the directory path for the TXT files
+txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras\AllTradingDesksVaRStress26Jul2024.txt'
+
+# Function to get the latest TXT file based on the name
+def get_latest_txt_file(directory):
+    # List all TXT files in the directory
+    list_of_files = glob.glob(os.path.join(directory, "*.txt"))
+
+    if not list_of_files:
+        st.error("Nenhum arquivo TXT encontrado no diretório especificado.")
+        return None
+
+    # Find the most recent file based on the date in the filename
+    latest_file = None
+    latest_date = None
+    for file in list_of_files:
+        file_name = os.path.basename(file)
+        # Extract date from the filename
+        try:
+            date_str = file_name.split("Stress")[-1].replace(".txt", "")
+            file_date = datetime.datetime.strptime(date_str, "%d%b%Y")
+            # Update the latest file if the current file is newer
+            if latest_date is None or file_date > latest_date:
+                latest_date = file_date
+                latest_file = file
+        except ValueError:
+            continue
+
+    if latest_file is None:
+        st.error("Nenhum arquivo TXT com data válida encontrado no diretório.")
+
+    return latest_file
+
+# Get the latest TXT file
+latest_txt_file = get_latest_txt_file(txt_directory)
+
+if latest_txt_file:
+    # Read data from the latest TXT file
+    try:
+        latest_txt_data = pd.read_csv(latest_txt_file, delimiter='\t')  # Adjust the delimiter as needed
+
+        # Select the necessary column
+        selected_columns = ["ProductClass"]
+        if all(col in latest_txt_data.columns for col in selected_columns):
+            selected_txt_data = latest_txt_data[selected_columns].copy()
+
+            # Add new columns with empty values
+            selected_txt_data["Primeiro Aviso"] = ""  # Add the appropriate value here
+            selected_txt_data["Último Trade"] = ""  # Add the appropriate value here
+            selected_txt_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
+            selected_txt_data["Entrega Física"] = ""  # Add the appropriate value here
+
+            # Display the selected data in a table on Streamlit
+            st.dataframe(selected_txt_data, use_container_width=True, hide_index=True)
+
+        else:
+            st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
+
+    except Exception as e:
+        st.error(f"Ocorreu um erro ao ler o arquivo TXT: {e}")
+
+else:
+    st.stop()  # Stop execution if no TXT files are found
+
 # Create a random Pandas dataframe with existing tickets.
 if "df" not in st.session_state:
-
-    # Set seed for reproducibility.
     np.random.seed(42)
-
-    # Make up some fake issue descriptions.
     issue_descriptions = [
         "Network connectivity issues in the office",
         "Software application crashing on startup",
@@ -50,8 +109,6 @@ if "df" not in st.session_state:
         "Customer data not loading in CRM",
         "Collaboration tool not sending notifications",
     ]
-
-    # Generate the dataframe with 100 rows/tickets.
     data = {
         "ID": [f"TICKET-{i}" for i in range(1100, 1000, -1)],
         "Issue": np.random.choice(issue_descriptions, size=100),
@@ -63,24 +120,17 @@ if "df" not in st.session_state:
         ],
     }
     df = pd.DataFrame(data)
-
-    # Save the dataframe in session state (a dictionary-like object that persists across
-    # page runs). This ensures our data is persisted when the app updates.
     st.session_state.df = df
 
 # Show a section to add a new ticket.
 st.header("Add a ticket")
 
-# We're adding tickets via an st.form and some input widgets. If widgets are used
-# in a form, the app will only rerun once the submit button is pressed.
 with st.form("add_ticket_form"):
     issue = st.text_area("Describe the issue")
     priority = st.selectbox("Priority", ["High", "Medium", "Low"])
     submitted = st.form_submit_button("Submit")
 
 if submitted:
-    # Make a dataframe for the new ticket and append it to the dataframe in session
-    # state.
     recent_ticket_number = int(max(st.session_state.df.ID).split("-")[1])
     today = datetime.datetime.now().strftime("%m-%d-%Y")
     df_new = pd.DataFrame(
@@ -94,8 +144,6 @@ if submitted:
             }
         ]
     )
-
-    # Show a little success message.
     st.write("Ticket submitted! Here are the ticket details:")
     st.dataframe(df_new, use_container_width=True, hide_index=True)
     st.session_state.df = pd.concat([df_new, st.session_state.df], axis=0)
@@ -110,8 +158,6 @@ st.info(
     icon="✍️",
 )
 
-# Show the tickets dataframe with st.data_editor. This lets the user edit the table
-# cells. The edited data is returned as a new dataframe.
 edited_df = st.data_editor(
     st.session_state.df,
     use_container_width=True,
@@ -130,21 +176,18 @@ edited_df = st.data_editor(
             required=True,
         ),
     },
-    # Disable editing the ID and Date Submitted columns.
     disabled=["ID", "Date Submitted"],
 )
 
 # Show some metrics and charts about the ticket.
 st.header("Statistics")
 
-# Show metrics side by side using st.columns and st.metric.
 col1, col2, col3 = st.columns(3)
 num_open_tickets = len(st.session_state.df[st.session_state.df.Status == "Open"])
 col1.metric(label="Number of open tickets", value=num_open_tickets, delta=10)
 col2.metric(label="First response time (hours)", value=5.2, delta=-1.5)
 col3.metric(label="Average resolution time (hours)", value=16, delta=2)
 
-# Show two Altair charts using st.altair_chart.
 st.write("")
 st.write("##### Ticket status per month")
 status_plot = (
