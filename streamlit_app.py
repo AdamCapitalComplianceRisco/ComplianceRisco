@@ -5,8 +5,6 @@ import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
-
-import streamlit as st
 import os
 
 # Configuração da página deve ser feita no início
@@ -15,9 +13,12 @@ st.set_page_config(page_title="Rolagem", page_icon="🎫")
 # Caminho para o arquivo CSS
 css_path = os.path.join(os.path.dirname(__file__), 'styles.css')
 
-# Carrega o conteúdo do arquivo CSS
-with open(css_path) as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+# Verifica se o arquivo CSS existe antes de tentar abri-lo
+if os.path.exists(css_path):
+    with open(css_path) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+else:
+    st.error("Arquivo CSS não encontrado!")
 
 # Título do aplicativo
 st.title("Meu Aplicativo Streamlit")
