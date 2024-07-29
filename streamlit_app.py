@@ -4,6 +4,8 @@ import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
+import os
+import glob
 
 # Configure the page
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
@@ -21,9 +23,15 @@ st.write(
     """
 )
 
-# Create a random Pandas dataframe with existing tickets.
-if "df" not in st.session_state:
+# Directory where CSV files are stored
+csv_directory = "Z:/Riscos/Planilhas/Atuais/Power BI\Bases Carteiras"
 
+# Get the latest CSV file
+latest_csv_file = get_latest_csv_file(csv_directory)
+latest_csv_data = pd.read_csv(latest_csv_file)
+
+# Add the fourth column from the latest CSV file to the existing dataframe
+if "df" not in st.session_state:
     # Set seed for reproducibility.
     np.random.seed(42)
 
@@ -61,6 +69,7 @@ if "df" not in st.session_state:
             datetime.date(2023, 6, 1) + datetime.timedelta(days=random.randint(0, 182))
             for _ in range(100)
         ],
+        "CSV Data": latest_csv_data.iloc[:, 3].values  # Assuming the 4th column
     }
     df = pd.DataFrame(data)
 
@@ -91,6 +100,7 @@ if submitted:
                 "Status": "Open",
                 "Priority": priority,
                 "Date Submitted": today,
+                "CSV Data": ""  # Add empty value for new entry
             }
         ]
     )
