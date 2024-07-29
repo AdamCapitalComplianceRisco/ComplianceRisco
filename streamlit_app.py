@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 # Define o caminho do diretório dos arquivos TXT
-txt_directory = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras'
+txt_directory = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras'
 
 # Função para obter o arquivo TXT mais recente
 def get_latest_txt_file(directory):
