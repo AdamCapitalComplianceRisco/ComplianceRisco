@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Defina o caminho do arquivo TXT
-file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
+file_path = r'Z:\Riscos\Planilhas\Atuais\Power BI\Bases Carteiras\AllTradingDesksVaRStress26Jul2024.txt'
 
 # Tente ler o arquivo e criar o DataFrame
 try:
