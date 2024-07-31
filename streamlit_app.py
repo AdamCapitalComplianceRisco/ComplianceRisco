@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import os
-import altair as alt  # Adicione esta linha para importar altair
+import altair as alt
 
 # Configure the page
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
@@ -22,8 +22,20 @@ st.write(
 # Define the path for the specific TXT file
 file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
 
-# Check if the file exists
-if os.path.exists(file_path):
+# Simulate DataFrame if the file is not found
+if not os.path.exists(file_path):
+    st.warning(f"O arquivo não foi encontrado no caminho: {file_path}")
+
+    # Creating a simulated DataFrame for testing
+    simulated_data = {
+        'ProductClass': ['Class1', 'Class2', 'Class3'],
+        'Primeiro Aviso': ['Aviso1', 'Aviso2', 'Aviso3'],
+        'Último Trade': ['Trade1', 'Trade2', 'Trade3'],
+        'Dias Úteis Para Liquidação': ['Dia1', 'Dia2', 'Dia3'],
+        'Entrega Física': ['Entrega1', 'Entrega2', 'Entrega3']
+    }
+    selected_data = pd.DataFrame(simulated_data)
+else:
     try:
         # Load the data from the specific TXT file
         txt_data = pd.read_csv(file_path, delimiter='\t')  # Adjust the delimiter as needed
@@ -38,15 +50,13 @@ if os.path.exists(file_path):
             selected_data["Último Trade"] = ""  # Add the appropriate value here
             selected_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
             selected_data["Entrega Física"] = ""  # Add the appropriate value here
-
-            # Display the selected data in a table on Streamlit
-            st.dataframe(selected_data, use_container_width=True, hide_index=True)
         else:
             st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
     except Exception as e:
         st.error(f"Ocorreu um erro ao ler o arquivo TXT: {e}")
-else:
-    st.error(f"O arquivo não foi encontrado no caminho: {file_path}")
+
+# Display the selected data in a table on Streamlit
+st.dataframe(selected_data, use_container_width=True, hide_index=True)
 
 # Continue with the rest of the Streamlit app code...
 
