@@ -15,7 +15,7 @@ st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
 st.title("Rolagem")
 st.write(
     """
-    Aqui será possível verificar as rolagens dos Ativos(Last Date Tradeble)
+    Aqui será possível verificar as rolagens dos Ativos (Last Date Tradeble)
     """
 )
 
@@ -46,10 +46,10 @@ else:
             selected_data = txt_data[['ProductClass']].copy()
 
             # Add new columns with empty values
-            selected_data["Primeiro Aviso"] = ""  # Add the appropriate value here
-            selected_data["Último Trade"] = ""  # Add the appropriate value here
-            selected_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
-            selected_data["Entrega Física"] = ""  # Add the appropriate value here
+            selected_data["Primeiro Aviso"] = ["Aviso1", "Aviso2", "Aviso3"]  # Add the appropriate value here
+            selected_data["Último Trade"] = ["Trade1", "Trade2", "Trade3"]  # Add the appropriate value here
+            selected_data["Dias Úteis Para Liquidação"] = ["Dia1", "Dia2", "Dia3"]  # Add the appropriate value here
+            selected_data["Entrega Física"] = ["Entrega1", "Entrega2", "Entrega3"]  # Add the appropriate value here
         else:
             st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
     except Exception as e:
