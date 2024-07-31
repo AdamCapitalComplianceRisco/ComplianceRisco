@@ -22,20 +22,11 @@ st.write(
 # Define the path for the specific TXT file
 file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
 
-# Simulate DataFrame if the file is not found
-if not os.path.exists(file_path):
-    st.warning(f"O arquivo não foi encontrado no caminho: {file_path}")
+# Initialize the DataFrame
+selected_data = None
 
-    # Creating a simulated DataFrame for testing
-    simulated_data = {
-        'ProductClass': ['Class1', 'Class2', 'Class3'],
-        'Primeiro Aviso': ['Aviso1', 'Aviso2', 'Aviso3'],
-        'Último Trade': ['Trade1', 'Trade2', 'Trade3'],
-        'Dias Úteis Para Liquidação': ['Dia1', 'Dia2', 'Dia3'],
-        'Entrega Física': ['Entrega1', 'Entrega2', 'Entrega3']
-    }
-    selected_data = pd.DataFrame(simulated_data)
-else:
+# Try to load the data from the TXT file
+if os.path.exists(file_path):
     try:
         # Load the data from the specific TXT file
         txt_data = pd.read_csv(file_path, delimiter='\t')  # Adjust the delimiter as needed
@@ -54,6 +45,20 @@ else:
             st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
     except Exception as e:
         st.error(f"Ocorreu um erro ao ler o arquivo TXT: {e}")
+
+# If the file is not found or an error occurs, create simulated data
+if selected_data is None:
+    st.warning(f"O arquivo não foi encontrado no caminho: {file_path}")
+
+    # Creating a simulated DataFrame for testing
+    simulated_data = {
+        'ProductClass': ['Class1', 'Class2', 'Class3'],
+        'Primeiro Aviso': ['Aviso1', 'Aviso2', 'Aviso3'],
+        'Último Trade': ['Trade1', 'Trade2', 'Trade3'],
+        'Dias Úteis Para Liquidação': ['Dia1', 'Dia2', 'Dia3'],
+        'Entrega Física': ['Entrega1', 'Entrega2', 'Entrega3']
+    }
+    selected_data = pd.DataFrame(simulated_data)
 
 # Display the selected data in a table on Streamlit
 st.dataframe(selected_data, use_container_width=True, hide_index=True)
