@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 import os
+import altair as alt  # Adicione esta linha para importar altair
 
 # Configure the page
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
@@ -18,19 +19,8 @@ st.write(
     """
 )
 
-import os
-
 # Define the path for the specific TXT file
 file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
-
-# Check if the file exists
-if os.path.exists(file_path):
-    print("O arquivo foi encontrado com sucesso!")
-else:
-    print(f"O arquivo não foi encontrado no caminho: {file_path}")
-
-# Initialize DataFrame for selected data
-selected_data = pd.DataFrame()
 
 # Check if the file exists
 if os.path.exists(file_path):
@@ -44,10 +34,13 @@ if os.path.exists(file_path):
             selected_data = txt_data[['ProductClass']].copy()
 
             # Add new columns with empty values
-            selected_data["Primeiro Aviso"] = "0"  # Add the appropriate value here
-            selected_data["Último Trade"] = "0"  # Add the appropriate value here
-            selected_data["Dias Úteis Para Liquidação"] = "0"  # Add the appropriate value here
-            selected_data["Entrega Física"] = "0"  # Add the appropriate value here
+            selected_data["Primeiro Aviso"] = ""  # Add the appropriate value here
+            selected_data["Último Trade"] = ""  # Add the appropriate value here
+            selected_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
+            selected_data["Entrega Física"] = ""  # Add the appropriate value here
+
+            # Display the selected data in a table on Streamlit
+            st.dataframe(selected_data, use_container_width=True, hide_index=True)
         else:
             st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
     except Exception as e:
@@ -55,9 +48,7 @@ if os.path.exists(file_path):
 else:
     st.error(f"O arquivo não foi encontrado no caminho: {file_path}")
 
-# Show the selected data in a table on Streamlit
-if not selected_data.empty:
-    st.dataframe(selected_data, use_container_width=True, hide_index=True)
+# Continue with the rest of the Streamlit app code...
 
 # Create a random Pandas dataframe with existing tickets.
 if "df" not in st.session_state:
