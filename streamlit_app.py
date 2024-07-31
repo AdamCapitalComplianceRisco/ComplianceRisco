@@ -1,7 +1,5 @@
 import pandas as pd
 import streamlit as st
-import os
-import altair as alt
 
 # Configure the page
 st.set_page_config(page_title="Rolagem", page_icon="🎫")
@@ -19,49 +17,19 @@ st.write(
     """
 )
 
-# Define the path for the specific TXT file
-file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesksVaRStress26Jul2024.txt'
+# Create a simulated DataFrame for testing
+simulated_data = {
+    'ProductClass': ['Class1', 'Class2', 'Class3'],
+    'Primeiro Aviso': ['Aviso1', 'Aviso2', 'Aviso3'],
+    'Último Trade': ['Trade1', 'Trade2', 'Trade3'],
+    'Dias Úteis Para Liquidação': ['Dia1', 'Dia2', 'Dia3'],
+    'Entrega Física': ['Entrega1', 'Entrega2', 'Entrega3']
+}
 
-# Initialize the DataFrame
-selected_data = None
+df_simulated = pd.DataFrame(simulated_data)
 
-# Check if the file exists
-if os.path.exists(file_path):
-    try:
-        # Load the data from the specific TXT file
-        txt_data = pd.read_csv(file_path, delimiter='\t')  # Adjust the delimiter as needed
-
-        # Check if 'ProductClass' column exists
-        if 'ProductClass' in txt_data.columns:
-            # Select the necessary column
-            selected_data = txt_data[['ProductClass']].copy()
-
-            # Add new columns with empty values
-            selected_data["Primeiro Aviso"] = ""  # Add the appropriate value here
-            selected_data["Último Trade"] = ""  # Add the appropriate value here
-            selected_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
-            selected_data["Entrega Física"] = ""  # Add the appropriate value here
-
-            # Display the selected data in a table on Streamlit
-            st.dataframe(selected_data, use_container_width=True, hide_index=True)
-        else:
-            st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
-    except Exception as e:
-        st.error(f"Ocorreu um erro ao ler o arquivo TXT: {e}")
-else:
-    st.error(f"O arquivo não foi encontrado no caminho: {file_path}")
-    # Create a simulated DataFrame for testing
-    simulated_data = {
-        'ProductClass': ['Class1', 'Class2', 'Class3'],
-        'Primeiro Aviso': ['Aviso1', 'Aviso2', 'Aviso3'],
-        'Último Trade': ['Trade1', 'Trade2', 'Trade3'],
-        'Dias Úteis Para Liquidação': ['Dia1', 'Dia2', 'Dia3'],
-        'Entrega Física': ['Entrega1', 'Entrega2', 'Entrega3']
-    }
-    selected_data = pd.DataFrame(simulated_data)
-
-    # Display the selected data in a table on Streamlit
-    st.dataframe(selected_data, use_container_width=True, hide_index=True)
+# Display the DataFrame in Streamlit
+st.dataframe(df_simulated, use_container_width=True, hide_index=True)
 
 # Continue with the rest of the Streamlit app code...
 
