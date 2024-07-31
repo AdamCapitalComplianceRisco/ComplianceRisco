@@ -25,7 +25,7 @@ file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras/AllTradingDesk
 # Initialize the DataFrame
 selected_data = None
 
-# Try to load the data from the TXT file
+# Check if the file exists
 if os.path.exists(file_path):
     try:
         # Load the data from the specific TXT file
@@ -37,20 +37,20 @@ if os.path.exists(file_path):
             selected_data = txt_data[['ProductClass']].copy()
 
             # Add new columns with empty values
-            selected_data["Primeiro Aviso"] = ["Aviso1", "Aviso2", "Aviso3"]  # Add the appropriate value here
-            selected_data["Último Trade"] = ["Trade1", "Trade2", "Trade3"]  # Add the appropriate value here
-            selected_data["Dias Úteis Para Liquidação"] = ["Dia1", "Dia2", "Dia3"]  # Add the appropriate value here
-            selected_data["Entrega Física"] = ["Entrega1", "Entrega2", "Entrega3"]  # Add the appropriate value here
+            selected_data["Primeiro Aviso"] = ""  # Add the appropriate value here
+            selected_data["Último Trade"] = ""  # Add the appropriate value here
+            selected_data["Dias Úteis Para Liquidação"] = ""  # Add the appropriate value here
+            selected_data["Entrega Física"] = ""  # Add the appropriate value here
+
+            # Display the selected data in a table on Streamlit
+            st.dataframe(selected_data, use_container_width=True, hide_index=True)
         else:
             st.error("Coluna 'ProductClass' não encontrada no arquivo TXT.")
     except Exception as e:
         st.error(f"Ocorreu um erro ao ler o arquivo TXT: {e}")
-
-# If the file is not found or an error occurs, create simulated data
-if selected_data is None:
-    st.warning(f"O arquivo não foi encontrado no caminho: {file_path}")
-
-    # Creating a simulated DataFrame for testing
+else:
+    st.error(f"O arquivo não foi encontrado no caminho: {file_path}")
+    # Create a simulated DataFrame for testing
     simulated_data = {
         'ProductClass': ['Class1', 'Class2', 'Class3'],
         'Primeiro Aviso': ['Aviso1', 'Aviso2', 'Aviso3'],
@@ -60,8 +60,8 @@ if selected_data is None:
     }
     selected_data = pd.DataFrame(simulated_data)
 
-# Display the selected data in a table on Streamlit
-st.dataframe(selected_data, use_container_width=True, hide_index=True)
+    # Display the selected data in a table on Streamlit
+    st.dataframe(selected_data, use_container_width=True, hide_index=True)
 
 # Continue with the rest of the Streamlit app code...
 
@@ -200,5 +200,4 @@ priority_plot = (
         orient="bottom", titleFontSize=14, labelFontSize=14, titlePadding=5
     )
 )
-
 st.altair_chart(priority_plot, use_container_width=True, theme="streamlit")
