@@ -200,4 +200,5 @@ priority_plot = (
         orient="bottom", titleFontSize=14, labelFontSize=14, titlePadding=5
     )
 )
+
 st.altair_chart(priority_plot, use_container_width=True, theme="streamlit")
