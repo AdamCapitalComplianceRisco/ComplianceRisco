@@ -325,7 +325,7 @@ def Liquidez():
 
 # Chame a função anomaly_detection para executar a aplicação
 if __name__ == "__main__":
-    anomaly_detection()
+    Liquidez()
 
 
 #------------------------------------------------------------------------------------
