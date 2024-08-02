@@ -100,7 +100,7 @@ def home():
                 lower the quantity of data points flagged as anomalies.
                     ''')
 
-    st.markdown('Developed by Diego Pesco Alcalde')
+    st.markdown('Developed by Jessica Padilha')
     st.link_button("Monitor de Investimentos", "https://app.powerbi.com/reportEmbed?reportId=22307503-603d-4126-80e9-cc19e59f8558&autoAuth=true&ctid=0e61582b-9979-4017-a24a-a3737e7169f8")
 
 
@@ -163,7 +163,7 @@ def pnl():
         'Sergio Dias':'MCHI'
     }
 
-    tickers = st.multiselect('Choose Tickers to Build Portfolio', tickers_options, 'S&P500')
+    tickers = st.multiselect('Choose Tickers to Build Portfolio', tickers_options, 'Adam')
     st.markdown('Select area with mouse to zoom charts, click twice to zoom out.')
     try:
         # Retrieve data and charts from portfolio
