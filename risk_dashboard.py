@@ -298,6 +298,8 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
+
+def Liquidez():
  st.title('Liquidez')
 
     # Caminho do arquivo Excel (usando caminho relativo)
