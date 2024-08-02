@@ -8,8 +8,6 @@ from scipy.stats import shapiro, norm
 import risk_functions
 from prophet import Prophet
 
-
-
 def home():
     st.title('Monitor de Investimentos')
     st.header('Welcome! Please read me!')
@@ -284,9 +282,53 @@ def anomaly_detection():
         print(error)
 
 
-
 #------------------------------------------------------------------------------------
 
+def liquidez():
+    st.title('Liquidez')
+
+    # Caminho para a planilha
+    file_path = r'Z:\Riscos\Planilhas\Atuais\Power BI\Base Monitor Compliance - Controle.xlsm'
+    sheet_name = 'DEPARA - ATIVOS'
+
+    # Leitura da planilha
+    try:
+        df = pd.read_excel(file_path, sheet_name=sheet_name, usecols='B:C')
+    except Exception as e:
+        st.error(f"Erro ao ler a planilha: {e}")
+        return
+
+    # Extração dos dados da planilha
+    tickers_options = df.iloc[:, 0].tolist()
+    dict_tickers = pd.Series(df.iloc[:, 1].values, index=df.iloc[:, 0]).to_dict()
+
+    # Interface do Streamlit
+    tickers = st.selectbox('Escolha o Ticker', tickers_options)
+    interval_width = st.number_input('Largura do Intervalo', min_value=0.00, max_value=1.00, value=0.90)
+    st.markdown('Selecione a área com o mouse para ampliar os gráficos, clique duas vezes para diminuir.')
+
+    # Processamento e visualização dos dados
+    try:
+        yf_data = yf.download(dict_tickers[tickers], period='5y', interval='1d')
+        volume = yf_data[['Volume']].copy()
+        returns = yf_data[['Adj Close']].pct_change().dropna()
+        returns.columns = ['Returns']
+
+        volume, fig_volume = risk_functions.anomaly(df=volume, column='Volume', interval_width=interval_width)
+        st.plotly_chart(fig_volume, use_container_width=True)
+
+        returns, fig_returns = risk_functions.anomaly(df=returns, column='Returns', interval_width=interval_width)
+        st.plotly_chart(fig_returns, use_container_width=True)
+    except Exception as error:
+        st.markdown('Por favor, tente recarregar esta página ou escolha outro ticker.')
+        st.error(f"Erro: {error}")
+
+# Chame a função anomaly_detection para executar a aplicação
+if __name__ == "__main__":
+    anomaly_detection()
+
+
+#------------------------------------------------------------------------------------
 
 
 def main():
