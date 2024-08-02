@@ -12,3 +12,4 @@ streamlit
 yfinance
 sqlalchemy
 pyodbc
+risk_functions
