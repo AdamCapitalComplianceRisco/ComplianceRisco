@@ -7,3 +7,8 @@ yfinance
 plotly
 prophet==1.1.5
 holidays==0.37
+pandas
+streamlit
+yfinance
+sqlalchemy
+pyodbc
