@@ -364,8 +364,8 @@ def main():
         model_comparison()
     if choice=='Anomaly Detection':
         anomaly_detection()
-    if choice=='Liquidez':
-        Liquidez()
+   # if choice=='Liquidez':
+   #     Liquidez()
 
 
 main()
