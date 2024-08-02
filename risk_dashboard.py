@@ -311,7 +311,7 @@ def Liquidez():
         st.write("Colunas disponíveis no DataFrame:", df.columns.tolist())
 
         # Verificar se as colunas existem
-        if 'ativo' not in df.columns or 'venc' not in df.columns:
+        if 'ATIVO' not in df.columns or 'VENC' not in df.columns:
             st.error("As colunas 'ativo' ou 'venc' não foram encontradas na planilha.")
             return
 
