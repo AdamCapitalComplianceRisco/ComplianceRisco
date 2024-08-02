@@ -5,7 +5,7 @@ import yfinance as yf
 import plotly.express as px
 import plotly.graph_objects as go
 from scipy.stats import shapiro, norm
-import risk_functions
+import arch
 from prophet import Prophet
 
 
