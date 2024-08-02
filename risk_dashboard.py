@@ -299,20 +299,28 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 def Liquidez():
-    st.title('Liquidez')
+      st.title('Liquidez')
 
-    # Leitura da tabela SQL
-    try:
-        query = 'SELECT ativo, venc FROM DeParaAt'
-        df = pd.read_sql(query, engine)
-        st.write("Dados carregados com sucesso da base SQL.")
-    except Exception as e:
-        st.error(f"Erro ao ler a base de dados: {e}")
+    # Caminho para a planilha
+    file_path = r'Z:\Riscos\Planilhas\Atuais\Power BI\Base Monitor Compliance - Controle.xlsm'
+    sheet_name = 'DEPARA - ATIVOS'
+
+    # Verificar se o arquivo existe
+    if not os.path.exists(file_path):
+        st.error(f"O arquivo não foi encontrado no caminho especificado: {file_path}")
         return
 
-    # Extração dos dados da tabela
-    tickers_options = df['ativo'].tolist()
-    dict_tickers = pd.Series(df['venc'].values, index=df['ativo']).to_dict()
+    # Leitura da planilha
+    try:
+        df = pd.read_excel(file_path, sheet_name=sheet_name, usecols='B:C')
+        st.write("Planilha carregada com sucesso.")
+    except Exception as e:
+        st.error(f"Erro ao ler a planilha: {e}")
+        return
+
+    # Extração dos dados da planilha
+    tickers_options = df.iloc[:, 0].tolist()
+    dict_tickers = pd.Series(df.iloc[:, 1].values, index=df.iloc[:, 0]).to_dict()
 
     # Interface do Streamlit
     tickers = st.selectbox('Escolha o Ticker', tickers_options)
