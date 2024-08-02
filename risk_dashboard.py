@@ -102,7 +102,7 @@ def home():
                     
                     ''')
 
-    
+
 
     st.markdown('Developed by Jessica Padilha')
     st.link_button("Monitor de Investimentos", "https://app.powerbi.com/reportEmbed?reportId=22307503-603d-4126-80e9-cc19e59f8558&autoAuth=true&ctid=0e61582b-9979-4017-a24a-a3737e7169f8")
@@ -292,7 +292,7 @@ def anomaly_detection():
 def main():
     st.sidebar.title('Monitor de Investimentos')
     st.sidebar.markdown('---')
-    menu_list=['Home', 'Ticker Info', 'P&L', 'VaR Model Analysis', 'Anomaly Detection']
+    menu_list=['Home', 'Ticker Info', 'P&L', 'VaR Model Analysis', 'Anomaly Detection','Liquidez']
     choice = st.sidebar.radio('Window', menu_list)
 
 
@@ -305,6 +305,8 @@ def main():
     if choice=='VaR Model Analysis':
         model_comparison()
     if choice=='Anomaly Detection':
+        anomaly_detection()
+    if choice=='Liquidez':
         anomaly_detection()
 
 
