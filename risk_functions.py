@@ -270,7 +270,7 @@ def anomaly(df, column, interval_width):
 
 
 
-def pnl(tickers, dict_tickers):
+def pnl_analysis(tickers, dict_tickers):
     tickers_df=None
 
     for ticker in tickers:
