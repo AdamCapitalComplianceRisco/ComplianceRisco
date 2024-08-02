@@ -270,7 +270,7 @@ def anomaly(df, column, interval_width):
 
 
 
-def portfolio_analysis(tickers, dict_tickers):
+def pnl(tickers, dict_tickers):
     tickers_df=None
 
     for ticker in tickers:
@@ -287,7 +287,7 @@ def portfolio_analysis(tickers, dict_tickers):
     weights = weights/weights.sum()
 
     # Calculate Portfolio Returns
-    tickers_df['Portfolio'] = tickers_df.mean(axis=1)
+    tickers_df['PNL'] = tickers_df.mean(axis=1)
 
     compounded_returns = tickers_df.copy()
     compounded_returns = (1+compounded_returns).cumprod()
@@ -309,11 +309,11 @@ def portfolio_analysis(tickers, dict_tickers):
                 ))
 
     # Calculate Portfolio Volatility from returns
-    portfolio_volatility = tickers_df.rolling('365D', min_periods=1).std()
+    pnl_volatility = tickers_df.rolling('365D', min_periods=1).std()
 
-    fig_volatility = px.line(portfolio_volatility,
-                          x=portfolio_volatility.index,
-                          y=portfolio_volatility.columns,
+    fig_volatility = px.line(pnl_volatility,
+                          x=pnl_volatility.index,
+                          y=pnl_volatility.columns,
                           color_discrete_sequence=px.colors.qualitative.G10)
 
     fig_volatility.update_layout(title="365D Rolling Portfolio Volatility",
