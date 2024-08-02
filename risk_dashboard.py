@@ -308,35 +308,40 @@ def Liquidez():
     # Leitura da planilha Excel
     try:
         df = pd.read_excel(file_path, sheet_name='DEPARA - ATIVOS')
-        st.write("Dados carregados com sucesso da planilha Excel.")
+        st.write("Colunas disponíveis no DataFrame:", df.columns.tolist())
+
+        # Verificar se as colunas existem
+        if 'ativo' not in df.columns or 'venc' not in df.columns:
+            st.error("As colunas 'ativo' ou 'venc' não foram encontradas na planilha.")
+            return
+
+        # Extração dos dados da tabela
+        tickers_options = df['ativo'].tolist()
+        dict_tickers = pd.Series(df['venc'].values, index=df['ativo']).to_dict()
+
+        # Interface do Streamlit
+        tickers = st.selectbox('Escolha o Ticker', tickers_options)
+        interval_width = st.number_input('Largura do Intervalo', min_value=0.00, max_value=1.00, value=0.90)
+        st.markdown('Selecione a área com o mouse para ampliar os gráficos, clique duas vezes para diminuir.')
+
+        # Processamento e visualização dos dados
+        try:
+            yf_data = yf.download(dict_tickers[tickers], period='5y', interval='1d')
+            volume = yf_data[['Volume']].copy()
+            returns = yf_data[['Adj Close']].pct_change().dropna()
+            returns.columns = ['Returns']
+
+            volume, fig_volume = risk_functions.anomaly(df=volume, column='Volume', interval_width=interval_width)
+            st.plotly_chart(fig_volume, use_container_width=True)
+
+            returns, fig_returns = risk_functions.anomaly(df=returns, column='Returns', interval_width=interval_width)
+            st.plotly_chart(fig_returns, use_container_width=True)
+        except Exception as error:
+            st.markdown('Por favor, tente recarregar esta página ou escolha outro ticker.')
+            st.error(f"Erro: {error}")
+
     except Exception as e:
         st.error(f"Erro ao ler a planilha: {e}")
-        return
-
-    # Extração dos dados da tabela
-    tickers_options = df['ativo'].tolist()
-    dict_tickers = pd.Series(df['venc'].values, index=df['ativo']).to_dict()
-
-    # Interface do Streamlit
-    tickers = st.selectbox('Escolha o Ticker', tickers_options)
-    interval_width = st.number_input('Largura do Intervalo', min_value=0.00, max_value=1.00, value=0.90)
-    st.markdown('Selecione a área com o mouse para ampliar os gráficos, clique duas vezes para diminuir.')
-
-    # Processamento e visualização dos dados
-    try:
-        yf_data = yf.download(dict_tickers[tickers], period='5y', interval='1d')
-        volume = yf_data[['Volume']].copy()
-        returns = yf_data[['Adj Close']].pct_change().dropna()
-        returns.columns = ['Returns']
-
-        volume, fig_volume = risk_functions.anomaly(df=volume, column='Volume', interval_width=interval_width)
-        st.plotly_chart(fig_volume, use_container_width=True)
-
-        returns, fig_returns = risk_functions.anomaly(df=returns, column='Returns', interval_width=interval_width)
-        st.plotly_chart(fig_returns, use_container_width=True)
-    except Exception as error:
-        st.markdown('Por favor, tente recarregar esta página ou escolha outro ticker.')
-        st.error(f"Erro: {error}")
 
 
 #------------------------------------------------------------------------------------
