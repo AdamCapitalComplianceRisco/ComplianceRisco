@@ -7,6 +7,20 @@ import plotly.graph_objects as go
 from scipy.stats import shapiro, norm
 import risk_functions
 from prophet import Prophet
+from sqlalchemy import create_engine
+
+# Informações de conexão
+server_name = 'adamcapitalsqldb.database.windows.net'
+database_name = 'AdamDB'
+username = 'sqladminadam'
+password = 'qpE3gEF2JF98e2PBg'
+driver = 'ODBC+Driver+17+for+SQL+Server'
+
+# Criar a string de conexão
+connection_string = f'mssql+pyodbc://{username}:{password}@{server_name}/{database_name}?driver={driver}'
+
+# Conectar ao banco de dados
+engine = create_engine(connection_string)
 
 def home():
     st.title('Monitor de Investimentos')
@@ -285,32 +299,20 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 def Liquidez():
-   st.title('Liquidez')
+    st.title('Liquidez')
 
-    # Opção 1: Caminho UNC
-    # file_path = r'\\servidor\compartilhamento\Riscos\Planilhas\Atuais\Power BI\Base Monitor Compliance - Controle.xlsm'
-
-    # Opção 2: Caminho local
-    file_path = r'C:\temp\Base Monitor Compliance - Controle.xlsm'
-
-    sheet_name = 'DEPARA - ATIVOS'
-
-    # Verificar se o arquivo existe
-    if not os.path.exists(file_path):
-        st.error(f"O arquivo não foi encontrado no caminho especificado: {file_path}")
-        return
-
-    # Leitura da planilha
+    # Leitura da tabela SQL
     try:
-        df = pd.read_excel(file_path, sheet_name=sheet_name, usecols='B:C')
-        st.write("Planilha carregada com sucesso.")
+        query = 'SELECT ativo, venc FROM DeParaAt'
+        df = pd.read_sql(query, engine)
+        st.write("Dados carregados com sucesso da base SQL.")
     except Exception as e:
-        st.error(f"Erro ao ler a planilha: {e}")
+        st.error(f"Erro ao ler a base de dados: {e}")
         return
 
-    # Extração dos dados da planilha
-    tickers_options = df.iloc[:, 0].tolist()
-    dict_tickers = pd.Series(df.iloc[:, 1].values, index=df.iloc[:, 0]).to_dict()
+    # Extração dos dados da tabela
+    tickers_options = df['ativo'].tolist()
+    dict_tickers = pd.Series(df['venc'].values, index=df['ativo']).to_dict()
 
     # Interface do Streamlit
     tickers = st.selectbox('Escolha o Ticker', tickers_options)
