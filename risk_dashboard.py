@@ -8,19 +8,6 @@ from scipy.stats import shapiro, norm
 import risk_functions
 from prophet import Prophet
 
-# Informações de conexão
-server_name = 'adamcapitalsqldb.database.windows.net'
-database_name = 'AdamDB'
-username = 'sqladminadam'
-password = 'qpE3gEF2JF98e2PBg'
-driver = 'ODBC+Driver+17+for+SQL+Server'
-
-# Criar a string de conexão
-connection_string = f'mssql+pyodbc://{username}:{password}@{server_name}/{database_name}?driver={driver}'
-
-# Conectar ao banco de dados
-engine = create_engine(connection_string)
-
 def home():
     st.title('Monitor de Investimentos')
     st.header('Welcome! Please read me!')
