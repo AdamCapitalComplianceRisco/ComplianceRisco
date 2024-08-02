@@ -302,7 +302,7 @@ def Liquidez():
       st.title('Liquidez')
 
     # Caminho para a planilha
-    file_path = r'Z:\Riscos\Planilhas\Atuais\Power BI\Base Monitor Compliance - Controle.xlsm'
+    file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Base Monitor Compliance - Controle.xlsm'
     sheet_name = 'DEPARA - ATIVOS'
 
     # Verificar se o arquivo existe
