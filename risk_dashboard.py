@@ -284,7 +284,7 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
-def liquidez():
+def Liquidez():
     st.title('Liquidez')
 
     # Caminho para a planilha
@@ -349,7 +349,7 @@ def main():
     if choice=='Anomaly Detection':
         anomaly_detection()
     if choice=='Liquidez':
-        anomaly_detection()
+        Liquidez()
 
 
 main()
