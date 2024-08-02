@@ -284,16 +284,25 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
-def Liquidez():
-    st.title('Liquidez')
+ st.title('Liquidez')
 
-    # Caminho para a planilha
-    file_path = r'Z:\Riscos\Planilhas\Atuais\Power BI\Base Monitor Compliance - Controle.xlsm'
+    # Opção 1: Caminho UNC
+    # file_path = r'\\servidor\compartilhamento\Riscos\Planilhas\Atuais\Power BI\Base Monitor Compliance - Controle.xlsm'
+
+    # Opção 2: Caminho local
+    file_path = r'C:\temp\Base Monitor Compliance - Controle.xlsm'
+
     sheet_name = 'DEPARA - ATIVOS'
+
+    # Verificar se o arquivo existe
+    if not os.path.exists(file_path):
+        st.error(f"O arquivo não foi encontrado no caminho especificado: {file_path}")
+        return
 
     # Leitura da planilha
     try:
         df = pd.read_excel(file_path, sheet_name=sheet_name, usecols='B:C')
+        st.write("Planilha carregada com sucesso.")
     except Exception as e:
         st.error(f"Erro ao ler a planilha: {e}")
         return
