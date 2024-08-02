@@ -8,8 +8,10 @@ from scipy.stats import shapiro, norm
 import risk_functions
 from prophet import Prophet
 
+
+
 def home():
-    st.title('Monitor de Investimentos')
+    st.title('Risk Analysis Dashboard')
     st.header('Welcome! Please read me!')
     st.markdown('''
             Thank you for accessing this simple risk analysis dashboard. The objective of this application is to facilitate
@@ -36,9 +38,12 @@ def home():
                     have many properties that can be used in risk assessment.
                     ''')
 
-    with st.expander('* P&L'):
+    with st.expander('* Portfolio Analysis'):
         st.markdown('''
-                    Nessa tela é possível verificar o hisótico do PNL
+                    This section calculates the compounded return and volatility of an equal weight portfolio composed
+                    of two or more assets. The results help to visualize the main message of Markowitz's Modern Portfolio Theory, 
+                    which is that diversification is helpful in reducing volatility while keeping moderate returns 
+                    when the selected assets have small values of covariance.
                     ''')
 
     with st.expander('* VaR Model Analysis'):
@@ -94,15 +99,10 @@ def home():
                 which can be interpreted as a confidence level. The higher the confidence level required, the
                 lower the quantity of data points flagged as anomalies.
                     ''')
-    with st.expander('* Liquidez'):
-        st.markdown('''
-                Nessa tela é possível verificar a liquidez dos ativos nas carteiras dos Fundos.
-                    
-                    ''')
 
+    st.markdown('Developed by Diego Pesco Alcalde')
+    st.link_button("LinkedIn", "https://www.linkedin.com/in/diegopesco/")
 
-    st.markdown('Developed by Jessica Padilha')
-    st.link_button("Monitor de Investimentos", "https://app.powerbi.com/reportEmbed?reportId=22307503-603d-4126-80e9-cc19e59f8558&autoAuth=true&ctid=0e61582b-9979-4017-a24a-a3737e7169f8")
 
 
 #------------------------------------------------------------------------------------
@@ -113,15 +113,14 @@ def ticker_info():
     st.title('Ticker Info')
 
     # Define tickers options and present to user
-    tickers_options = ['Adam', 'Mesa', 'Adriano Fontes', 'Back Book', 'Fábio Landi', 'João Bandeira','Sergio Dias']
+    tickers_options = ['S&P500', 'NASDAQ', 'USD/BRL', 'Gold', 'BTC/USD', 'MCHI']
     dict_tickers = {
-        'Adam':'^GSPC',
-        'Mesa':'^IXIC',
-        'Adriano Fontes':'BRL=X',
-        'Back Book':'GLD',
-        'Fábio Landi':'BTC-USD',
-        'João Bandeira':'MCHI',
-        'Sergio Dias':'MCHI'
+        'S&P500':'^GSPC',
+        'NASDAQ':'^IXIC',
+        'USD/BRL':'BRL=X',
+        'Gold':'GLD',
+        'BTC/USD':'BTC-USD',
+        'MCHI':'MCHI'
     }
 
     tickers = st.selectbox('Choose Ticker', tickers_options)
@@ -148,26 +147,25 @@ def ticker_info():
 
 
 
-def pnl():
-    st.title('P&L')
+def portfolio():
+    st.title('Portfolio Analysis')
 
     # Define tickers options and present to user
-    tickers_options = ['Adam', 'Mesa', 'Adriano Fontes', 'Back Book', 'Fábio Landi', 'João Bandeira','Sergio Dias']
+    tickers_options = ['S&P500', 'NASDAQ', 'USD/BRL', 'Gold', 'BTC/USD', 'MCHI']
     dict_tickers = {
-        'Adam':'^GSPC',
-        'Mesa':'^IXIC',
-        'Adriano Fontes':'BRL=X',
-        'Back Book':'GLD',
-        'Fábio Landi':'BTC-USD',
-        'João Bandeira':'MCHI',
-        'Sergio Dias':'MCHI'
+        'S&P500':'^GSPC',
+        'NASDAQ':'^IXIC',
+        'USD/BRL':'BRL=X',
+        'Gold':'GLD',
+        'BTC/USD':'BTC-USD',
+        'MCHI':'MCHI'
     }
 
-    tickers = st.multiselect('Choose Tickers to Build Portfolio', tickers_options, 'Adam')
+    tickers = st.multiselect('Choose Tickers to Build Portfolio', tickers_options, 'S&P500')
     st.markdown('Select area with mouse to zoom charts, click twice to zoom out.')
     try:
         # Retrieve data and charts from portfolio
-        weights, tickers_df, compounded_returns, fig_volatility, fig_returns = risk_functions.pnl_analysis(tickers, dict_tickers)
+        weights, tickers_df, compounded_returns, fig_volatility, fig_returns = risk_functions.portfolio_analysis(tickers, dict_tickers)
 
         # Plot charts and data
         st.markdown('**Portfolio Weights**')
@@ -189,15 +187,14 @@ def model_comparison():
     st.title('VaR Model Analysis')
 
     # Define tickers options and present to user
-    tickers_options = ['Adam', 'Mesa', 'Adriano Fontes', 'Back Book', 'Fábio Landi', 'João Bandeira','Sergio Dias']
+    tickers_options = ['S&P500', 'NASDAQ', 'USD/BRL', 'Gold', 'BTC/USD', 'MCHI']
     dict_tickers = {
-        'Adam':'^GSPC',
-        'Mesa':'^IXIC',
-        'Adriano Fontes':'BRL=X',
-        'Back Book':'GLD',
-        'Fábio Landi':'BTC-USD',
-        'João Bandeira':'MCHI',
-        'Sergio Dias':'MCHI'
+        'S&P500':'^GSPC',
+        'NASDAQ':'^IXIC',
+        'USD/BRL':'BRL=X',
+        'Gold':'GLD',
+        'BTC/USD':'BTC-USD',
+        'MCHI':'MCHI'
     }
 
     tickers = st.selectbox('Choose Ticker', tickers_options)
@@ -247,15 +244,14 @@ def anomaly_detection():
     st.title('Anomaly Detection')
 
     # Define tickers options and present to user
-    tickers_options = ['Adam', 'Mesa', 'Adriano Fontes', 'Back Book', 'Fábio Landi', 'João Bandeira','Sergio Dias']
+    tickers_options = ['S&P500', 'NASDAQ', 'USD/BRL', 'Gold', 'BTC/USD', 'MCHI']
     dict_tickers = {
-       'Adam':'^GSPC',
-        'Mesa':'^IXIC',
-        'Adriano Fontes':'BRL=X',
-        'Back Book':'GLD',
-        'Fábio Landi':'BTC-USD',
-        'João Bandeira':'MCHI',
-        'Sergio Dias':'MCHI'
+        'S&P500':'^GSPC',
+        'NASDAQ':'^IXIC',
+        'USD/BRL':'BRL=X',
+        'Gold':'GLD',
+        'BTC/USD':'BTC-USD',
+        'MCHI':'MCHI'
     }
 
     tickers = st.selectbox('Choose Ticker', tickers_options)
@@ -280,54 +276,15 @@ def anomaly_detection():
         print(error)
 
 
-#------------------------------------------------------------------------------------
-
-
-def Liquidez():
-    st.title('Liquidez')
-
-    file_path = 'Base Monitor Compliance - Controle.xlsm'
-
-    try:
-        df = pd.read_excel(file_path, sheet_name='DEPARA - ATIVOS')
-        if 'ATIVO' not in df.columns or 'VENC' not in df.columns:
-            st.error("As colunas 'ATIVO' ou 'VENC' não foram encontradas na planilha.")
-            return
-
-        tickers_options2 = df['ATIVO'].tolist()
-        dict_tickers = pd.Series(df['VENC'].values, index=df['ATIVO']).to_dict()
-
-        tickers = st.selectbox('Escolha o Ticker', tickers_options2)
-        interval_width = st.number_input('Largura do Intervalo', min_value=0.00, max_value=1.00, value=0.90)
-
-        try:
-            yf_data = yf.download(dict_tickers[tickers], period='5y', interval='1d')
-            volume = yf_data[['Volume']].copy()
-            returns = yf_data[['Adj Close']].pct_change().dropna()
-            returns.columns = ['Returns']
-
-            volume_fig = go.Figure()
-            volume_fig.add_trace(go.Scatter(x=volume.index, y=volume['Volume'], mode='lines', name='Volume'))
-
-            returns_fig = go.Figure()
-            returns_fig.add_trace(go.Scatter(x=returns.index, y=returns['Returns'], mode='lines', name='Returns'))
-
-            st.plotly_chart(volume_fig, use_container_width=True)
-            st.plotly_chart(returns_fig, use_container_width=True)
-        except Exception as error:
-            st.error(f"Erro ao processar dados: {error}")
-
-    except Exception as e:
-        st.error(f"Erro ao ler a planilha: {e}")
-
 
 #------------------------------------------------------------------------------------
+
 
 
 def main():
-    st.sidebar.title('Monitor de Investimentos')
+    st.sidebar.title('Risk Analysis Dashboard')
     st.sidebar.markdown('---')
-    menu_list=['Home', 'Ticker Info', 'P&L', 'VaR Model Analysis', 'Anomaly Detection','Liquidez']
+    menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection']
     choice = st.sidebar.radio('Window', menu_list)
 
 
@@ -335,14 +292,12 @@ def main():
         home()
     if choice=='Ticker Info':
         ticker_info()
-    if choice=='P&L':
-        pnl()
+    if choice=='Portfolio Analysis':
+        portfolio()
     if choice=='VaR Model Analysis':
         model_comparison()
     if choice=='Anomaly Detection':
         anomaly_detection()
-    if choice=='Liquidez':
-        Liquidez()
 
 
 main()
