@@ -167,7 +167,7 @@ def pnl():
     st.markdown('Select area with mouse to zoom charts, click twice to zoom out.')
     try:
         # Retrieve data and charts from portfolio
-        weights, tickers_df, compounded_returns, fig_volatility, fig_returns = risk_functions.portfolio_analysis(tickers, dict_tickers)
+        weights, tickers_df, compounded_returns, fig_volatility, fig_returns = risk_functions.pnl_analysis(tickers, dict_tickers)
 
         # Plot charts and data
         st.markdown('**Portfolio Weights**')
