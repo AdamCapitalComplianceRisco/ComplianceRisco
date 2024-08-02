@@ -285,7 +285,7 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 def Liquidez():
- st.title('Liquidez')
+   st.title('Liquidez')
 
     # Opção 1: Caminho UNC
     # file_path = r'\\servidor\compartilhamento\Riscos\Planilhas\Atuais\Power BI\Base Monitor Compliance - Controle.xlsm'
@@ -332,6 +332,7 @@ def Liquidez():
     except Exception as error:
         st.markdown('Por favor, tente recarregar esta página ou escolha outro ticker.')
         st.error(f"Erro: {error}")
+
 
 #------------------------------------------------------------------------------------
 
