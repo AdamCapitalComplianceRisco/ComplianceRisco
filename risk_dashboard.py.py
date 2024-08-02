@@ -38,7 +38,7 @@ def home():
                     have many properties that can be used in risk assessment.
                     ''')
 
-    with st.expander('* Portfolio Analysis'):
+    with st.expander('* P&L'):
         st.markdown('''
                     This section calculates the compounded return and volatility of an equal weight portfolio composed
                     of two or more assets. The results help to visualize the main message of Markowitz's Modern Portfolio Theory, 
@@ -101,7 +101,7 @@ def home():
                     ''')
 
     st.markdown('Developed by Diego Pesco Alcalde')
-    st.link_button("LinkedIn", "https://www.linkedin.com/in/diegopesco/")
+    st.link_button("Monitor de Investimentos", "https://app.powerbi.com/reportEmbed?reportId=22307503-603d-4126-80e9-cc19e59f8558&autoAuth=true&ctid=0e61582b-9979-4017-a24a-a3737e7169f8")
 
 
 
@@ -113,14 +113,15 @@ def ticker_info():
     st.title('Ticker Info')
 
     # Define tickers options and present to user
-    tickers_options = ['S&P500', 'NASDAQ', 'USD/BRL', 'Gold', 'BTC/USD', 'MCHI']
+    tickers_options = ['Adam', 'Mesa', 'Adriano Fontes', 'Back Book', 'Fábio Landi', 'João Bandeira','Sergio Dias']
     dict_tickers = {
-        'S&P500':'^GSPC',
-        'NASDAQ':'^IXIC',
-        'USD/BRL':'BRL=X',
-        'Gold':'GLD',
-        'BTC/USD':'BTC-USD',
-        'MCHI':'MCHI'
+        'Adam':'^GSPC',
+        'Mesa':'^IXIC',
+        'Adriano Fontes':'BRL=X',
+        'Back Book':'GLD',
+        'Fábio Landi':'BTC-USD',
+        'João Bandeira':'MCHI',
+        'Sergio Dias':'MCHI'
     }
 
     tickers = st.selectbox('Choose Ticker', tickers_options)
@@ -147,18 +148,19 @@ def ticker_info():
 
 
 
-def portfolio():
-    st.title('Portfolio Analysis')
+def pnl():
+    st.title('P&L')
 
     # Define tickers options and present to user
-    tickers_options = ['S&P500', 'NASDAQ', 'USD/BRL', 'Gold', 'BTC/USD', 'MCHI']
+    tickers_options = ['Adam', 'Mesa', 'Adriano Fontes', 'Back Book', 'Fábio Landi', 'João Bandeira','Sergio Dias']
     dict_tickers = {
-        'S&P500':'^GSPC',
-        'NASDAQ':'^IXIC',
-        'USD/BRL':'BRL=X',
-        'Gold':'GLD',
-        'BTC/USD':'BTC-USD',
-        'MCHI':'MCHI'
+        'Adam':'^GSPC',
+        'Mesa':'^IXIC',
+        'Adriano Fontes':'BRL=X',
+        'Back Book':'GLD',
+        'Fábio Landi':'BTC-USD',
+        'João Bandeira':'MCHI',
+        'Sergio Dias':'MCHI'
     }
 
     tickers = st.multiselect('Choose Tickers to Build Portfolio', tickers_options, 'S&P500')
@@ -284,7 +286,7 @@ def anomaly_detection():
 def main():
     st.sidebar.title('Monitor de Investimentos')
     st.sidebar.markdown('---')
-    menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection']
+    menu_list=['Home', 'Ticker Info', 'P&L', 'VaR Model Analysis', 'Anomaly Detection']
     choice = st.sidebar.radio('Window', menu_list)
 
 
@@ -292,7 +294,7 @@ def main():
         home()
     if choice=='Ticker Info':
         ticker_info()
-    if choice=='Portfolio Analysis':
+    if choice=='P&L':
         portfolio()
     if choice=='VaR Model Analysis':
         model_comparison()
