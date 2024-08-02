@@ -312,7 +312,7 @@ def Liquidez():
 
         # Verificar se as colunas existem
         if 'ATIVO' not in df.columns or 'VENC' not in df.columns:
-            st.error("As colunas 'ativo' ou 'venc' não foram encontradas na planilha.")
+            st.error("As colunas 'ATIVO' ou 'VENC' não foram encontradas na planilha.")
             return
 
         # Extração dos dados da tabela
