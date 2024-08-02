@@ -40,10 +40,7 @@ def home():
 
     with st.expander('* P&L'):
         st.markdown('''
-                    This section calculates the compounded return and volatility of an equal weight portfolio composed
-                    of two or more assets. The results help to visualize the main message of Markowitz's Modern Portfolio Theory, 
-                    which is that diversification is helpful in reducing volatility while keeping moderate returns 
-                    when the selected assets have small values of covariance.
+                    Nessa tela é possível verificar o hisótico do PNL
                     ''')
 
     with st.expander('* VaR Model Analysis'):
@@ -99,6 +96,13 @@ def home():
                 which can be interpreted as a confidence level. The higher the confidence level required, the
                 lower the quantity of data points flagged as anomalies.
                     ''')
+    with st.expander('* Liquidez'):
+        st.markdown('''
+                Nessa tela é possível verificar a liquidez dos ativos nas carteiras dos Fundos.
+                    
+                    ''')
+
+    
 
     st.markdown('Developed by Jessica Padilha')
     st.link_button("Monitor de Investimentos", "https://app.powerbi.com/reportEmbed?reportId=22307503-603d-4126-80e9-cc19e59f8558&autoAuth=true&ctid=0e61582b-9979-4017-a24a-a3737e7169f8")
