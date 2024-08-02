@@ -282,7 +282,7 @@ def anomaly_detection():
 
 
 def main():
-    st.sidebar.title('Risk Analysis Dashboard')
+    st.sidebar.title('Monitor de Investimentos')
     st.sidebar.markdown('---')
     menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection']
     choice = st.sidebar.radio('Window', menu_list)
