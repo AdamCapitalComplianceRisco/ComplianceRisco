@@ -323,11 +323,6 @@ def Liquidez():
         st.markdown('Por favor, tente recarregar esta página ou escolha outro ticker.')
         st.error(f"Erro: {error}")
 
-# Chame a função anomaly_detection para executar a aplicação
-if __name__ == "__main__":
-    Liquidez()
-
-
 #------------------------------------------------------------------------------------
 
 
