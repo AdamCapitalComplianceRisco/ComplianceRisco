@@ -316,8 +316,8 @@ def Liquidez():
             return
 
         # Extração dos dados da tabela
-        tickers_options = df['ativo'].tolist()
-        dict_tickers = pd.Series(df['venc'].values, index=df['ativo']).to_dict()
+        tickers_options = df['ATIVO'].tolist()
+        dict_tickers = pd.Series(df['VENC'].values, index=df['ATIVO']).to_dict()
 
         # Interface do Streamlit
         tickers = st.selectbox('Escolha o Ticker', tickers_options)
