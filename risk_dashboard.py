@@ -7,7 +7,6 @@ import plotly.graph_objects as go
 from scipy.stats import shapiro, norm
 import risk_functions
 from prophet import Prophet
-from sqlalchemy import create_engine
 
 # Informações de conexão
 server_name = 'adamcapitalsqldb.database.windows.net'
