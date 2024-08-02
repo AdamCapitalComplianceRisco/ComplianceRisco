@@ -115,10 +115,8 @@ def home():
                     ''')
 
 
-
     st.markdown('Developed by Jessica Padilha')
     st.link_button("Monitor de Investimentos", "https://app.powerbi.com/reportEmbed?reportId=22307503-603d-4126-80e9-cc19e59f8558&autoAuth=true&ctid=0e61582b-9979-4017-a24a-a3737e7169f8")
-
 
 
 #------------------------------------------------------------------------------------
@@ -299,6 +297,47 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 
+def Liquidez():
+    st.title('Liquidez')
+
+    file_path = 'Base Monitor Compliance - Controle.xlsm'
+
+    try:
+        df = pd.read_excel(file_path, sheet_name='DEPARA - ATIVOS')
+        if 'ATIVO' not in df.columns or 'VENC' not in df.columns:
+            st.error("As colunas 'ATIVO' ou 'VENC' não foram encontradas na planilha.")
+            return
+
+        tickers_options2 = df['ATIVO'].tolist()
+        dict_tickers = pd.Series(df['VENC'].values, index=df['ATIVO']).to_dict()
+
+        tickers = st.selectbox('Escolha o Ticker', tickers_options2)
+        interval_width = st.number_input('Largura do Intervalo', min_value=0.00, max_value=1.00, value=0.90)
+
+        try:
+            yf_data = yf.download(dict_tickers[tickers], period='5y', interval='1d')
+            volume = yf_data[['Volume']].copy()
+            returns = yf_data[['Adj Close']].pct_change().dropna()
+            returns.columns = ['Returns']
+
+            volume_fig = go.Figure()
+            volume_fig.add_trace(go.Scatter(x=volume.index, y=volume['Volume'], mode='lines', name='Volume'))
+
+            returns_fig = go.Figure()
+            returns_fig.add_trace(go.Scatter(x=returns.index, y=returns['Returns'], mode='lines', name='Returns'))
+
+            st.plotly_chart(volume_fig, use_container_width=True)
+            st.plotly_chart(returns_fig, use_container_width=True)
+        except Exception as error:
+            st.error(f"Erro ao processar dados: {error}")
+
+    except Exception as e:
+        st.error(f"Erro ao ler a planilha: {e}")
+
+
+#------------------------------------------------------------------------------------
+
+
 def main():
     st.sidebar.title('Monitor de Investimentos')
     st.sidebar.markdown('---')
@@ -316,6 +355,8 @@ def main():
         model_comparison()
     if choice=='Anomaly Detection':
         anomaly_detection()
-  
+    if choice=='Liquidez':
+        Liquidez()
+
 
 main()
