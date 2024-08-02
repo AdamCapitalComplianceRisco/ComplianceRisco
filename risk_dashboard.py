@@ -11,7 +11,7 @@ from prophet import Prophet
 
 
 def home():
-    st.title('Risk Analysis Dashboard')
+    st.title('Monitor de Investimentos')
     st.header('Welcome! Please read me!')
     st.markdown('''
             Thank you for accessing this simple risk analysis dashboard. The objective of this application is to facilitate
