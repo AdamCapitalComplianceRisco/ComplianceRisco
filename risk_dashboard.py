@@ -189,14 +189,15 @@ def model_comparison():
     st.title('VaR Model Analysis')
 
     # Define tickers options and present to user
-    tickers_options = ['S&P500', 'NASDAQ', 'USD/BRL', 'Gold', 'BTC/USD', 'MCHI']
+    tickers_options = ['Adam', 'Mesa', 'Adriano Fontes', 'Back Book', 'Fábio Landi', 'João Bandeira','Sergio Dias']
     dict_tickers = {
-        'S&P500':'^GSPC',
-        'NASDAQ':'^IXIC',
-        'USD/BRL':'BRL=X',
-        'Gold':'GLD',
-        'BTC/USD':'BTC-USD',
-        'MCHI':'MCHI'
+        'Adam':'^GSPC',
+        'Mesa':'^IXIC',
+        'Adriano Fontes':'BRL=X',
+        'Back Book':'GLD',
+        'Fábio Landi':'BTC-USD',
+        'João Bandeira':'MCHI',
+        'Sergio Dias':'MCHI'
     }
 
     tickers = st.selectbox('Choose Ticker', tickers_options)
@@ -246,14 +247,15 @@ def anomaly_detection():
     st.title('Anomaly Detection')
 
     # Define tickers options and present to user
-    tickers_options = ['S&P500', 'NASDAQ', 'USD/BRL', 'Gold', 'BTC/USD', 'MCHI']
+    tickers_options = ['Adam', 'Mesa', 'Adriano Fontes', 'Back Book', 'Fábio Landi', 'João Bandeira','Sergio Dias']
     dict_tickers = {
-        'S&P500':'^GSPC',
-        'NASDAQ':'^IXIC',
-        'USD/BRL':'BRL=X',
-        'Gold':'GLD',
-        'BTC/USD':'BTC-USD',
-        'MCHI':'MCHI'
+       'Adam':'^GSPC',
+        'Mesa':'^IXIC',
+        'Adriano Fontes':'BRL=X',
+        'Back Book':'GLD',
+        'Fábio Landi':'BTC-USD',
+        'João Bandeira':'MCHI',
+        'Sergio Dias':'MCHI'
     }
 
     tickers = st.selectbox('Choose Ticker', tickers_options)
@@ -295,7 +297,7 @@ def main():
     if choice=='Ticker Info':
         ticker_info()
     if choice=='P&L':
-        portfolio()
+        pnl()
     if choice=='VaR Model Analysis':
         model_comparison()
     if choice=='Anomaly Detection':
