@@ -13,3 +13,4 @@ yfinance
 sqlalchemy
 pyodbc
 risk_functions
+openpyxl
