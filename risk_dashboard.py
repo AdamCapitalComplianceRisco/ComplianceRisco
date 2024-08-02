@@ -284,6 +284,7 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
+def Liquidez():
  st.title('Liquidez')
 
     # Opção 1: Caminho UNC
