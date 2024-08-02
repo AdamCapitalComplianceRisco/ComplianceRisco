@@ -100,7 +100,7 @@ def home():
                 lower the quantity of data points flagged as anomalies.
                     ''')
 
-    st.markdown('Developed by Diego Pesco Alcalde')
+    st.markdown('Developed by Jessica Padilha')
     st.link_button("LinkedIn", "https://www.linkedin.com/in/diegopesco/")
 
 
