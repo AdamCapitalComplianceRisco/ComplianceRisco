@@ -300,10 +300,10 @@ def anomaly_detection():
 
 
 def Liquidez():
- st.title('Liquidez')
+    st.title('Liquidez')
 
     # Caminho do arquivo Excel (usando caminho relativo)
-    file_path = r'Z:/Riscos/Planilhas/Atuais/Power BI/Base Monitor Compliance - Controle.xlsm'
+    file_path = 'Base Monitor Compliance - Controle.xlsm'
 
     # Leitura da planilha Excel
     try:
