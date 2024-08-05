@@ -342,17 +342,22 @@ def portfolio_analysis(tickers, dict_tickers):
 def load_and_process_data(folder_path):
     all_data = []
 
-    # Loop through all files in the folder
+    # Verificar se o caminho fornecido existe
+    if not os.path.exists(folder_path):
+        raise FileNotFoundError(f"The provided folder path does not exist: {folder_path}")
+
+    # Loop através de todos os arquivos na pasta
     for file_name in os.listdir(folder_path):
         if file_name.endswith(".txt"):
             file_path = os.path.join(folder_path, file_name)
-            data = pd.read_csv(file_path, delimiter='\t')  # Adjust delimiter if needed
+            # Ajustar o delimitador conforme necessário
+            data = pd.read_csv(file_path, delimiter='\t')
             all_data.append(data)
 
-    # Concatenate all dataframes
+    # Concatenar todos os dataframes
     combined_data = pd.concat(all_data, ignore_index=True)
 
-    # Separate data for further analysis by Book and Date
+    # Separar dados por Book e Date
     results = {}
     book_groups = combined_data.groupby(['Book', 'Date'])
 
@@ -360,17 +365,17 @@ def load_and_process_data(folder_path):
         if book not in results:
             results[book] = {'data': pd.DataFrame(), 'fig': None}
 
-        # Append data for each book
+        # Adicionar dados para cada book
         results[book]['data'] = pd.concat([results[book]['data'], group[['Date', 'PL']]], ignore_index=True)
 
-        # Calculate returns
+        # Calcular retornos
         returns = group[['PL']].pct_change().dropna()
         returns.columns = ['Returns']
 
-        # Calculate normal distribution with same mean and std as the returns
+        # Calcular distribuição normal com a mesma média e desvio padrão que os retornos
         returns['Normal Distribution'] = np.random.normal(loc=returns['Returns'].mean(), scale=returns['Returns'].std(), size=len(returns))
 
-        # Line plot returns
+        # Gráfico de linhas dos retornos
         fig = px.line(returns, x=returns.index, y=['Returns'], title=f"{book} Daily Returns", color_discrete_sequence=px.colors.qualitative.G10)
 
         results[book]['fig'] = fig
