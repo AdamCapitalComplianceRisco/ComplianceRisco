@@ -5,12 +5,13 @@ import yfinance as yf
 import plotly.express as px
 import plotly.graph_objects as go
 from scipy.stats import shapiro, norm
-import arch
+import risk_functions
 from prophet import Prophet
 
 
+
 def home():
-    st.title('Monitor de Investimentos')
+    st.title('Risk Analysis Dashboard')
     st.header('Welcome! Please read me!')
     st.markdown('''
             Thank you for accessing this simple risk analysis dashboard. The objective of this application is to facilitate
@@ -99,7 +100,7 @@ def home():
                 lower the quantity of data points flagged as anomalies.
                     ''')
 
-    st.markdown('Developed by Jessica Padilha')
+    st.markdown('Developed by Diego Pesco Alcalde')
     st.link_button("LinkedIn", "https://www.linkedin.com/in/diegopesco/")
 
 
