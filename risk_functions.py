@@ -351,7 +351,7 @@ def load_and_process_data(folder_path):
         if file_name.endswith(".txt"):
             file_path = os.path.join(folder_path, file_name)
             # Ajustar o delimitador conforme necessário
-            data = pd.read_csv(file_path, delimiter='\t')
+            data = pd.read_csv(file_path, delimiter=',t')
             all_data.append(data)
 
     # Concatenar todos os dataframes
