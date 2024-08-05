@@ -366,7 +366,7 @@ def load_and_process_data(folder_path):
             resultspnl[book] = {'data': pd.DataFrame(), 'fig': None}
 
         # Adicionar dados para cada book
-        resultspnl[book]['data'] = pd.concat([resultspnl[book]['data'], group[['Date', 'PL']]], ignore_index=True)
+        resultspnl[book]['data'] = pd.concat([resultspnl[book]['ValDate'], group[['ValDate', 'PL']]], ignore_index=True)
 
         # Calcular retornos
         returns = group[['PL']].pct_change().dropna()
