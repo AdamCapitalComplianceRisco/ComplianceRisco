@@ -99,6 +99,20 @@ def home():
                 which can be interpreted as a confidence level. The higher the confidence level required, the
                 lower the quantity of data points flagged as anomalies.
                     ''')
+    with st.expander('pnl_dashboard'):
+            st.markdown('''
+                    An anomaly is an unusual or unexpected event or pattern in data. In the financial markets, anomalies
+                    might include sudden spikes or drops in price, unusual trading volumes, or other events
+                    that deviate from previous patterns. Anomaly detection is the process of identifying these events
+                    in data using statistical and mathematical methods. Detected anomalies can trigger many actions
+                    such as trading operations to improve returns or minimize risks.
+    
+                    Depending on the model that is used, different parameters must be established, but most of them
+                    are related to the sensitiveness of the model, i.e. how significant must the deviation be to
+                    be categorized as an anomaly. In this application that parameter will be the Interval Width,
+                    which can be interpreted as a confidence level. The higher the confidence level required, the
+                    lower the quantity of data points flagged as anomalies.
+                        ''')
 
     st.markdown('Developed by Diego Pesco Alcalde')
     st.link_button("LinkedIn", "https://www.linkedin.com/in/diegopesco/")
