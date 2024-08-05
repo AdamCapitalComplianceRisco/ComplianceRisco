@@ -280,7 +280,7 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 # Função para carregar e processar os arquivos TXT
-def pnl(folder_path):
+def load_and_process_data (folder_path):
     all_data = []
 
     # Loop through all files in the folder
