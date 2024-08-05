@@ -299,7 +299,7 @@ def anomaly_detection():
 def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
-    folder_path = "Z:/Riscos/PHP_Files/SiteOficial/Base Carteiras"
+    folder_path = "Z:/Riscos/PHP_Files/SiteOficial/Base Carteiras/AllTradingDesksVaRStress31Jul2024.txt"
 
     try:
         results = risk_functions.load_and_process_data(folder_path)
