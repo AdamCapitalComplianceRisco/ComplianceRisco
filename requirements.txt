@@ -7,4 +7,3 @@ yfinance
 plotly
 prophet==1.1.5
 holidays==0.37
-numpy
