@@ -339,45 +339,43 @@ def portfolio_analysis(tickers, dict_tickers):
 
 
 
-def load_and_process_data(folder_path):
-    all_data = []
 
-    # Verificar se o caminho fornecido existe
-    if not os.path.exists(folder_path):
-        raise FileNotFoundError(f"The provided folder path does not exist: {folder_path}")
+DATABASE_URI = "mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server"
 
-    # Loop através de todos os arquivos na pasta
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith(".txt"):
-            file_path = os.path.join(folder_path, file_name)
-            # Ajustar o delimitador conforme necessário
-            data = pd.read_csv(file_path, delimiter=',t')
-            all_data.append(data)
+def load_and_process_data():
+    # Crie uma conexão com a base de dados SQL
+    engine = create_engine(DATABASE_URI)
+    query = "SELECT [ValDate], [PL], [Book] FROM AdamDB.DBO.Carteira"
 
-    # Concatenar todos os dataframes
-    combined_data = pd.concat(all_data, ignore_index=True)
+    with engine.connect() as connection:
+        # Execute a consulta SQL e leia os dados em um DataFrame
+        df = pd.read_sql(query, connection)
 
-    # Separar dados por Book e Date
-    resultspnl = {}
-    book_groups = combined_data.groupby(['Book', 'Date'])
+    # Verificar se os dados foram carregados
+    if df.empty:
+        raise ValueError("No data loaded from the SQL query.")
 
-    for (book, date), group in book_groups:
-        if book not in resultspnl:
-            resultspnl[book] = {'data': pd.DataFrame(), 'fig': None}
+    # Separar dados por Book
+    book_groups = df.groupby('Book')
 
-        # Adicionar dados para cada book
-        resultspnl[book]['data'] = pd.concat([resultspnl[book]['ValDate'], group[['ValDate', 'PL']]], ignore_index=True)
+    results = {}
+    for book, group in book_groups:
+        results[book] = group
 
-        # Calcular retornos
-        returns = group[['PL']].pct_change().dropna()
-        returns.columns = ['Returns']
+    return results
 
-        # Calcular distribuição normal com a mesma média e desvio padrão que os retornos
-        returns['Normal Distribution'] = np.random.normal(loc=returns['Returns'].mean(), scale=returns['Returns'].std(), size=len(returns))
+def generate_pnl_plot(data, book):
+    fig = px.line(data, x='ValDate', y='PL', title=f'PNL for {book}')
+    return fig
 
-        # Gráfico de linhas dos retornos
-        fig = px.line(returns, x=returns.index, y=['Returns'], title=f"{book} Daily Returns", color_discrete_sequence=px.colors.qualitative.G10)
+def pnl_from_sql():
+    try:
+        pnl_data = load_and_process_data()
+        figs = {book: generate_pnl_plot(data, book) for book, data in pnl_data.items()}
+        return pnl_data, figs
+    except ValueError as e:
+        st.error(f"ValueError: {e}")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
 
-        resultspnl[book]['fig'] = fig
-
-    return resultspnl
+    return {}, {}
