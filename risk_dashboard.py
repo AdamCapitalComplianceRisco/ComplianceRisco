@@ -103,7 +103,7 @@ def home():
                 lower the quantity of data points flagged as anomalies.
                     ''')
     with st.expander('pnl_dashboard'):
-            st.markdown('''
+        st.markdown('''
                     An anomaly is an unusual or unexpected event or pattern in data. In the financial markets, anomalies
                     might include sudden spikes or drops in price, unusual trading volumes, or other events
                     that deviate from previous patterns. Anomaly detection is the process of identifying these events
