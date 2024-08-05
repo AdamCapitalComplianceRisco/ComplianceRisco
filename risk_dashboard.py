@@ -279,6 +279,69 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
+# Função para carregar e processar os arquivos TXT
+def pnl(folder_path):
+    all_data = []
+
+    # Loop through all files in the folder
+    for file_name in os.listdir(folder_path):
+        if file_name.endswith(".txt"):
+            file_path = os.path.join(folder_path, file_name)
+            data = pd.read_csv(file_path, delimiter='\t')  # Adjust delimiter if needed
+            all_data.append(data)
+
+    # Concatenate all dataframes
+    combined_data = pd.concat(all_data, ignore_index=True)
+
+    # Calculate PNL per Book
+    book_groups = combined_data.groupby('Book')
+
+    # Separate data for further analysis
+    results = {}
+    for book, group in book_groups:
+        returns = group[['PL']].pct_change().dropna()
+        returns.columns = ['Returns']
+
+        # Calculate normal distribution with same mean and std as the returns
+        returns['Normal Distribution'] = np.random.normal(loc=returns['Returns'].mean(), scale=returns['Returns'].std(), size=len(returns))
+
+        # Line plot returns
+        fig_returns_line = px.line(returns, x=returns.index, y=['Returns'], title=f"{book} Daily Returns", color_discrete_sequence=px.colors.qualitative.G10)
+
+        # Histogram of returns
+        fig_returns_hist = px.histogram(returns, x=['Returns', 'Normal Distribution'], barmode='overlay', title=f"{book} Returns Distribution", color_discrete_sequence=px.colors.qualitative.G10)
+
+        # Shapiro-Wilk normality test
+        normality_test = shapiro(returns['Returns'])
+
+        results[book] = {
+            'returns': returns,
+            'fig_returns_line': fig_returns_line,
+            'fig_returns_hist': fig_returns_hist,
+            'normality_test': normality_test
+        }
+
+    return book_groups.sum().reset_index(), results
+
+# Função principal do Streamlit
+def pnl():
+    st.title('PNL Analysis by Book')
+
+    folder_path = "Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras"
+    pnl_data, results = load_and_process_data(folder_path)
+
+    # Seleção de Books pelo usuário
+    books = pnl_data['Book'].unique().tolist()
+    selected_books = st.multiselect('Select Books', books, default=books)
+
+    for book in selected_books:
+        if book in results:
+            st.subheader(f"Book: {book}")
+            st.plotly_chart(results[book]['fig_returns_line'], use_container_width=True)
+            st.plotly_chart(results[book]['fig_returns_hist'], use_container_width=True)
+
+#------------------------------------------------------------------------------------
+
 
 
 def main():
@@ -298,6 +361,8 @@ def main():
         model_comparison()
     if choice=='Anomaly Detection':
         anomaly_detection()
+    if choice=='pnl':
+        pnl()
 
 
 main()
