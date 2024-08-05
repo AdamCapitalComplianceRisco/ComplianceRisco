@@ -358,15 +358,15 @@ def load_and_process_data(folder_path):
     combined_data = pd.concat(all_data, ignore_index=True)
 
     # Separar dados por Book e Date
-    results = {}
+    resultspnl = {}
     book_groups = combined_data.groupby(['Book', 'Date'])
 
     for (book, date), group in book_groups:
-        if book not in results:
-            results[book] = {'data': pd.DataFrame(), 'fig': None}
+        if book not in resultspnl:
+            resultspnl[book] = {'data': pd.DataFrame(), 'fig': None}
 
         # Adicionar dados para cada book
-        results[book]['data'] = pd.concat([results[book]['data'], group[['Date', 'PL']]], ignore_index=True)
+        resultspnl[book]['data'] = pd.concat([resultspnl[book]['data'], group[['Date', 'PL']]], ignore_index=True)
 
         # Calcular retornos
         returns = group[['PL']].pct_change().dropna()
@@ -378,6 +378,6 @@ def load_and_process_data(folder_path):
         # Gráfico de linhas dos retornos
         fig = px.line(returns, x=returns.index, y=['Returns'], title=f"{book} Daily Returns", color_discrete_sequence=px.colors.qualitative.G10)
 
-        results[book]['fig'] = fig
+        resultspnl[book]['fig'] = fig
 
-    return results
+    return resultspnl
