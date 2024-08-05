@@ -283,16 +283,25 @@ def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
     folder_path = "Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras"
-    results = risk_functions.load_and_process_data(folder_path)
 
-    # Seleção de Books pelo usuário
-    books = list(results.keys())
-    selected_books = st.multiselect('Select Books', books, default=books)
+    try:
+        results = functions.load_and_process_data(folder_path)
 
-    for book in selected_books:
-        if book in results:
-            st.subheader(f"Book: {book}")
-            st.plotly_chart(results[book]['fig'], use_container_width=True)
+        # Seleção de Books pelo usuário
+        books = list(results.keys())
+        selected_books = st.multiselect('Select Books', books, default=books)
+
+        for book in selected_books:
+            if book in results:
+                st.subheader(f"Book: {book}")
+                st.plotly_chart(results[book]['fig'], use_container_width=True)
+
+    except FileNotFoundError as e:
+        st.error(f"Error: {e}")
+    except Exception as e:
+        st.error("An unexpected error occurred. Please check the console for more details.")
+        print(e)
+
 
 
 #------------------------------------------------------------------------------------
