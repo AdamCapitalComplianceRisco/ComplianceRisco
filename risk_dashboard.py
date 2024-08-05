@@ -8,6 +8,9 @@ from scipy.stats import shapiro, norm
 import risk_functions
 from prophet import Prophet
 
+# Configurar o layout da página
+st.set_page_config(layout="wide")
+
 
 
 def home():
