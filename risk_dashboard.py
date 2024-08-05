@@ -8,7 +8,7 @@ from scipy.stats import shapiro, norm
 import risk_functions
 from prophet import Prophet
 from sqlalchemy import create_engine
-
+import pyodbc
 # Configurar o layout da página
 st.set_page_config(layout="wide")
 
