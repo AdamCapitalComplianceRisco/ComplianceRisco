@@ -297,27 +297,28 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 def pnl_dashboard():
+    st.set_page_config(layout="wide")
     st.title('PNL Analysis by Book')
 
-    folder_path = 'Z:/Riscos/PHP_Files/SiteOficial/Base Carteiras/'
-
     try:
-        results = risk_functions.load_and_process_data(folder_path)
+        # Carregar e processar dados
+        pnl_data, figs = risk_functions.pnl_from_sql()
 
-        # Seleção de Books pelo usuário
-        books = list(results.keys())
-        selected_books = st.multiselect('Select Books', books, default=books)
+        if pnl_data:
+            # Opções de seleção de Books
+            books = list(pnl_data.keys())
+            selected_book = st.selectbox('Choose Book', books)
 
-        for book in selected_books:
-            if book in results:
-                st.subheader(f"Book: {book}")
-                st.plotly_chart(results[book]['fig'], use_container_width=True)
+            # Exibir gráfico do Book selecionado
+            if selected_book and selected_book in figs:
+                st.plotly_chart(figs[selected_book], use_container_width=True)
+            else:
+                st.warning("Selected book data not available.")
+        else:
+            st.warning("No data available for analysis.")
 
-    except FileNotFoundError as e:
-        st.error(f"Error: {e}")
     except Exception as e:
-        st.error("An unexpected error occurred. Please check the console for more details.")
-        print(e)
+        st.error(f"An unexpected error occurred: {e}")
 
 
 #------------------------------------------------------------------------------------
