@@ -339,7 +339,7 @@ def portfolio_analysis(tickers, dict_tickers):
 
 
 
-def pnl_from_txt(folder_path):
+def load_and_process_data(folder_path):
     all_data = []
 
     # Loop through all files in the folder
@@ -352,16 +352,18 @@ def pnl_from_txt(folder_path):
     # Concatenate all dataframes
     combined_data = pd.concat(all_data, ignore_index=True)
 
-    # Calculate PNL per Book
-    book_groups = combined_data.groupby('Book')
-    pnl_data = book_groups['PL'].sum().reset_index()
-
-    # Plotting PNL per Book
-    fig_pnl_bar = px.bar(pnl_data, x='Book', y='PL', title="PNL per Book")
-
-    # Separate data for further analysis
+    # Separate data for further analysis by Book and Date
     results = {}
-    for book, group in book_groups:
+    book_groups = combined_data.groupby(['Book', 'Date'])
+
+    for (book, date), group in book_groups:
+        if book not in results:
+            results[book] = {'data': pd.DataFrame(), 'fig': None}
+
+        # Append data for each book
+        results[book]['data'] = pd.concat([results[book]['data'], group[['Date', 'PL']]], ignore_index=True)
+
+        # Calculate returns
         returns = group[['PL']].pct_change().dropna()
         returns.columns = ['Returns']
 
@@ -369,31 +371,8 @@ def pnl_from_txt(folder_path):
         returns['Normal Distribution'] = np.random.normal(loc=returns['Returns'].mean(), scale=returns['Returns'].std(), size=len(returns))
 
         # Line plot returns
-        fig_returns_line = px.line(returns, x=returns.index, y=['Returns'], title=f"{book} Daily Returns", color_discrete_sequence=px.colors.qualitative.G10)
+        fig = px.line(returns, x=returns.index, y=['Returns'], title=f"{book} Daily Returns", color_discrete_sequence=px.colors.qualitative.G10)
 
-        # Histogram of returns
-        fig_returns_hist = px.histogram(returns, x=['Returns', 'Normal Distribution'], barmode='overlay', title=f"{book} Returns Distribution", color_discrete_sequence=px.colors.qualitative.G10)
+        results[book]['fig'] = fig
 
-        # Shapiro-Wilk normality test
-        normality_test = shapiro(returns['Returns'])
-
-        results[book] = {
-            'returns': returns,
-            'fig_returns_line': fig_returns_line,
-            'fig_returns_hist': fig_returns_hist,
-            'normality_test': normality_test
-        }
-
-    return pnl_data, fig_pnl_bar, results
-
-# Usage example:
-folder_path = "Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras"
-pnl_data, fig_pnl_bar, results = pnl_from_txt(folder_path)
-
-# Display the bar plot for PNL per Book
-fig_pnl_bar.show()
-
-# Display returns plots for each Book
-for book, result in results.items():
-    result['fig_returns_line'].show()
-    result['fig_returns_hist'].show()
+    return results
