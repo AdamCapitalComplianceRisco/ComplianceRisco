@@ -297,7 +297,6 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 def pnl_dashboard():
-    st.set_page_config(layout="wide")
     st.title('PNL Analysis by Book')
 
     try:
