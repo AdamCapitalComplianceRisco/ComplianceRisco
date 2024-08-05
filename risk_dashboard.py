@@ -299,7 +299,7 @@ def anomaly_detection():
 def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
-    folder_path = "Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras"
+    folder_path = "Z:/Riscos/PHP_Files/SiteOficial/Base Carteiras"
 
     try:
         results = risk_functions.load_and_process_data(folder_path)
