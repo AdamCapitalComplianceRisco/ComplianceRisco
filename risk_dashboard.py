@@ -310,7 +310,7 @@ def pnl_dashboard():
 def main():
     st.sidebar.title('Risk Analysis Dashboard')
     st.sidebar.markdown('---')
-    menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection']
+    menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection','pnl_dashboard']
     choice = st.sidebar.radio('Window', menu_list)
 
 
