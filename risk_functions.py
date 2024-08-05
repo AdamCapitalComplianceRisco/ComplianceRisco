@@ -8,6 +8,7 @@ from scipy.stats import shapiro, norm
 import arch
 from prophet import Prophet
 import os
+from sqlalchemy import create_engine
 
 def compute_returns(tickers, dict_tickers):
   yf_data = yf.download(dict_tickers[tickers], period='5y', interval='1d')
