@@ -302,7 +302,7 @@ def pnl_dashboard():
     folder_path = "Z:/Riscos/Planilhas/Atuais/Power BI/Bases Carteiras"
 
     try:
-        results = functions.load_and_process_data(folder_path)
+        results = risk_functions.load_and_process_data(folder_path)
 
         # Seleção de Books pelo usuário
         books = list(results.keys())
