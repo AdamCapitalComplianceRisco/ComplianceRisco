@@ -9,7 +9,6 @@ import arch
 from prophet import Prophet
 
 
-
 def home():
     st.title('Monitor de Investimentos')
     st.header('Welcome! Please read me!')
