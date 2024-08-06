@@ -322,10 +322,10 @@ def pnl_dashboard():
 
     try:
         # Converte a data mais recente para um objeto datetime
-        latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
+        latest_date = datetime.strptime(latest_date_str, '%YYYY-%mm-%dd')
     except ValueError:
         # Tenta com outro formato de data se o formato acima falhar
-        latest_date = datetime.strptime(latest_date_str, '%d/%m/%Y')
+        latest_date = datetime.strptime(latest_date_str, '%dd/%mm/%YYYY')
 
     # Layout de seleção
     col1, col2 = st.columns(2)
