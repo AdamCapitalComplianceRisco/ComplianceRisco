@@ -312,20 +312,29 @@ def pnl_dashboard():
     # Buscar a data mais recente disponível na base de dados
     latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
-    latest_date_str = latest_date_result['LatestDate'][0]
+    latest_date = latest_date_result['LatestDate'][0]
 
-    # Debug: Mostrar o valor de latest_date_str
-    st.write(f"Latest Date String: {latest_date_str}")
+    # Debug: Mostrar o valor de latest_date
+    st.write(f"Latest Date: {latest_date}")
 
-    if latest_date_str is None:
+    if latest_date is None:
         st.error('No data available in the database.')
         return
 
     try:
-        # Converte a data mais recente para um objeto datetime
+        # Certifique-se de que latest_date é um objeto datetime
+        if isinstance(latest_date, pd.Timestamp):
+            latest_date = latest_date.to_pydatetime()  # Converte para datetime se for um Timestamp
+
+        # Se latest_date for um objeto datetime.date, converta para datetime
+        if isinstance(latest_date, datetime.date):
+            latest_date = datetime(latest_date.year, latest_date.month, latest_date.day)
+
+        # Converta latest_date para uma string no formato esperado
+        latest_date_str = latest_date.strftime('%Y-%m-%d')
         latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
     except ValueError as e:
-        st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
+        st.error(f'Error parsing date: {latest_date}. Error: {e}')
         return
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
