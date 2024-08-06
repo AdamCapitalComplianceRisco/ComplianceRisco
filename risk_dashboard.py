@@ -363,7 +363,7 @@ def pnl_dashboard():
         # Obter todos os dados para o intervalo de datas selecionado
         query = """
         SELECT * FROM AdamDB.DBO.Carteira
-        WHERE CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
         params = [start_date_str, end_date_str]
 
