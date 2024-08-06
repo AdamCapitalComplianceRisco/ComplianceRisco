@@ -375,9 +375,6 @@ def pnl_dashboard():
         """
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
-        st.write(f"SQL Query: {query}")
-        st.write(f"Parameters: {params}")
-
         try:
             data = fetch_data(query, params)
             st.write(f"Data Retrieved: {data.head()}")
