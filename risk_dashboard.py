@@ -118,8 +118,8 @@ def home():
                     lower the quantity of data points flagged as anomalies.
                         ''')
 
-    st.markdown('Developed by Diego Pesco Alcalde')
-    st.link_button("LinkedIn", "https://www.linkedin.com/in/diegopesco/")
+    st.markdown('Developed by Compliance and Risk')
+    st.link_button("Monitor Investimentos", "https://app.powerbi.com/reportEmbed?reportId=22307503-603d-4126-80e9-cc19e59f8558&autoAuth=true&ctid=0e61582b-9979-4017-a24a-a3737e7169f8")
 
 
 
@@ -350,6 +350,8 @@ def pnl_dashboard():
         books['Book'] = books['Book'].apply(rename_books)
         selected_books = st.multiselect('Select Books', books['Book'].unique(), default=books['Book'].unique())
 
+        st.write(f"Selected Books: {selected_books}")
+
         # Prepare a consulta SQL
         if selected_books:
             query = """
@@ -361,9 +363,17 @@ def pnl_dashboard():
             # Converte os parâmetros para a lista de valores a serem passados na consulta
             params = selected_books + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
 
+            st.write(f"SQL Query: {query}")
+            st.write(f"Parameters: {params}")
+
             # Corrige a consulta para suportar a lista de parâmetros
             # Use o formato correto para parâmetros
-            data = fetch_data(query, tuple(params))
+            try:
+                data = fetch_data(query, tuple(params))
+                st.write(f"Data Retrieved: {data.head()}")
+            except Exception as e:
+                st.error(f'Error executing query: {e}')
+                return
 
             if not data.empty:
                 # Renomear os valores dos books novamente no DataFrame de dados
