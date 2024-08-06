@@ -346,7 +346,7 @@ def pnl_dashboard():
             if '-SD' in book:
                 return 'Sérgio Dias'
             elif '-AF' in book:
-                return 'Adriano Fontes'
+                return 'AdrianO Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
             else:
@@ -364,7 +364,6 @@ def pnl_dashboard():
         selected_books_filtered = selected_books_filtered[selected_books_filtered['Book'].str.contains('-SD|[-AF]|Mesa', na=False)]
 
         selected_books_original = selected_books_filtered['Book'].tolist()
-
 
 
         # Obter todos os dados para o intervalo de datas selecionado
@@ -391,8 +390,11 @@ def pnl_dashboard():
             data = data[data['Book'].isin(selected_books)]
 
             if not data.empty:
+                # Excluir categorias específicas de ProductClass para filtragem
+                filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
+
                 # Agrupando os dados por Product e Book e somando o PNL
-                grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+                grouped_data = filtered_data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
 
                 # Gráfico de barras de PNL por Produto
                 fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
@@ -400,7 +402,7 @@ def pnl_dashboard():
                              labels={'PL': 'PNL', 'Product': 'Product'})
 
                 # Somatório do PNL por Book
-                total_pnl_by_book = data.groupby('Book')['PL'].sum().reset_index()
+                total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
                 total_pnl_by_book.columns = ['Book', 'Total PNL']
 
                 # Criar colunas para layout
