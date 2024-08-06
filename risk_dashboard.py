@@ -374,7 +374,7 @@ def pnl_dashboard():
 
         try:
             data = fetch_data(query, params)
-            st.write(f"Data Retrieved: {data.head()}")
+
         except Exception as e:
             st.error(f'Error executing query: {e}')
             return
