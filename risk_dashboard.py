@@ -306,7 +306,7 @@ def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
 def pnl_dashboard():
-    st.title('PNL')
+    st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
     latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
@@ -346,7 +346,7 @@ def pnl_dashboard():
             if '-SD' in book:
                 return 'Sérgio Dias'
             elif '-AF' in book:
-                return 'Adriano Fontes'
+                return 'AdrianO Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
             else:
@@ -355,6 +355,7 @@ def pnl_dashboard():
         books['RenamedBook'] = books['Book'].apply(rename_books)
         selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
 
+        st.write(f"Selected Books: {selected_books}")
 
         # Mapear os nomes renomeados de volta para os nomes originais dos livros
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
@@ -364,6 +365,8 @@ def pnl_dashboard():
 
         selected_books_original = selected_books_filtered['Book'].tolist()
 
+        st.write(f"Original Book Names for Query: {selected_books_original}")
+
         # Obter todos os dados para o intervalo de datas selecionado
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
@@ -372,9 +375,12 @@ def pnl_dashboard():
         """
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
+        st.write(f"SQL Query: {query}")
+        st.write(f"Parameters: {params}")
+
         try:
             data = fetch_data(query, params)
-
+            st.write(f"Data Retrieved: {data.head()}")
         except Exception as e:
             st.error(f'Error executing query: {e}')
             return
@@ -394,7 +400,21 @@ def pnl_dashboard():
                 fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
                              title='PNL by Product and Book',
                              labels={'PL': 'PNL', 'Product': 'Product'})
-                st.plotly_chart(fig, use_container_width=True)
+
+                # Somatório do PNL por Book
+                total_pnl_by_book = data.groupby('Book')['PL'].sum().reset_index()
+                total_pnl_by_book.columns = ['Book', 'Total PNL']
+
+                # Criar colunas para layout
+                col1, col2 = st.columns([3, 1])
+
+                with col1:
+                    st.plotly_chart(fig, use_container_width=True)
+
+                with col2:
+                    st.write("Total PNL by Book")
+                    st.dataframe(total_pnl_by_book)
+
             else:
                 st.error('No data available for the selected books.')
         else:
