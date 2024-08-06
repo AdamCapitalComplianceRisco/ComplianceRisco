@@ -369,7 +369,7 @@ def pnl_dashboard():
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        AND TRY CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
         params = selected_books_original + [start_date_str, end_date_str]
 
