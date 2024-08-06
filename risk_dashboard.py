@@ -361,7 +361,12 @@ def pnl_dashboard():
         st.write(f"Selected Books: {selected_books}")
 
         # Mapear os nomes renomeados de volta para os nomes originais dos livros
-        selected_books_original = books[books['RenamedBook'].isin(selected_books)]['Book'].tolist()
+        selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
+
+        # Filtrar apenas os trechos que contêm "-SD", "-AF" e "Mesa"
+        selected_books_filtered = selected_books_filtered[selected_books_filtered['Book'].str.contains('-SD|[-AF]|Mesa', na=False)]
+
+        selected_books_original = selected_books_filtered['Book'].tolist()
 
         st.write(f"Original Book Names for Query: {selected_books_original}")
 
@@ -408,6 +413,7 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
 
 
 
