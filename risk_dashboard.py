@@ -314,16 +314,21 @@ def pnl_dashboard():
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
-    # Debug: Mostrar o valor de latest_date_str
-    st.write(f"Latest Date String: {latest_date_str}")
+    # Debug: Mostrar o valor de latest_date_str e seu tipo
+    st.write(f"Latest Date String: {latest_date_str} (Type: {type(latest_date_str)})")
 
     if pd.isna(latest_date_str):
         st.error('No data available in the database.')
         return
 
     try:
-        # Converta latest_date_str para datetime
-        latest_date = datetime.strptime(latest_date_str, '%d/%m/%Y')
+        # Verifique se latest_date_str é uma string antes de converter
+        if isinstance(latest_date_str, str):
+            # Converta latest_date_str para datetime
+            latest_date = datetime.strptime(latest_date_str, '%d/%m/%Y')
+        else:
+            # Se latest_date_str não for uma string, trate-o como um datetime.date
+            latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
 
         # Ajuste o formato das datas
         default_dates = (latest_date - timedelta(days=182), latest_date)
@@ -359,6 +364,7 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
 
 #------------------------------------------------------------------------------------
 
