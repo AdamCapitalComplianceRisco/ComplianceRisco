@@ -297,9 +297,6 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
-# Conexão com o banco de dados
-engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
-
 # Função para buscar dados do banco de dados
 @st.cache_data
 def fetch_data(query, params):
@@ -332,14 +329,16 @@ def pnl_dashboard():
     data = fetch_data(query, params)
 
     if not data.empty:
+        # Agrupando os dados por Product e Book e somando o PNL
+        grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+
         # Gráfico de barras de PNL por Produto
-        fig = px.bar(data, x='Product', y='PL', color='Book', barmode='group',
+        fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
                      title='PNL by Product and Book',
                      labels={'PL': 'PNL', 'Product': 'Product'})
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.error('No data available for the selected filters.')
-
 
 #------------------------------------------------------------------------------------
 
