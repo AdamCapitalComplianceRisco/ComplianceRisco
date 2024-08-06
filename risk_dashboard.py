@@ -341,7 +341,7 @@ def pnl_dashboard():
             if book.endswith('-SD'):
                 return 'Sérgio Dias'
             elif book.endswith('-AF'):
-                return 'Adriano Fontes'
+                return 'AdrianO Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
             else:
@@ -351,33 +351,36 @@ def pnl_dashboard():
         selected_books = st.multiselect('Select Books', books['Book'].unique(), default=books['Book'].unique())
 
         # Prepare a consulta SQL
-        query = """
-        SELECT * FROM AdamDB.DBO.Carteira
-        WHERE Book IN ({})
-        AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-        """.format(','.join(['?'] * len(selected_books)))
+        if selected_books:
+            query = """
+            SELECT * FROM AdamDB.DBO.Carteira
+            WHERE Book IN ({})
+            AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+            """.format(','.join(['?'] * len(selected_books)))
 
-        # Converte os parâmetros para a lista de valores a serem passados na consulta
-        params = selected_books + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
+            # Converte os parâmetros para a lista de valores a serem passados na consulta
+            params = selected_books + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
 
-        # Corrige a consulta para suportar a lista de parâmetros
-        # Use o formato correto para parâmetros
-        data = fetch_data(query, tuple(params))
+            # Corrige a consulta para suportar a lista de parâmetros
+            # Use o formato correto para parâmetros
+            data = fetch_data(query, tuple(params))
 
-        if not data.empty:
-            # Renomear os valores dos books novamente no DataFrame de dados
-            data['Book'] = data['Book'].apply(rename_books)
+            if not data.empty:
+                # Renomear os valores dos books novamente no DataFrame de dados
+                data['Book'] = data['Book'].apply(rename_books)
 
-            # Agrupando os dados por Product e Book e somando o PNL
-            grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+                # Agrupando os dados por Product e Book e somando o PNL
+                grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
 
-            # Gráfico de barras de PNL por Produto
-            fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
-                         title='PNL by Product and Book',
-                         labels={'PL': 'PNL', 'Product': 'Product'})
-            st.plotly_chart(fig, use_container_width=True)
+                # Gráfico de barras de PNL por Produto
+                fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
+                             title='PNL by Product and Book',
+                             labels={'PL': 'PNL', 'Product': 'Product'})
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.error('No data available for the selected filters.')
         else:
-            st.error('No data available for the selected filters.')
+            st.error('No books selected.')
 
     except ValueError as e:
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
