@@ -341,15 +341,12 @@ def pnl_dashboard():
         books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
         books = fetch_data(books_query)
 
-        # Debug: Mostrar dados brutos de livros
-        st.write("Raw Books Data:", books)
-
         # Renomeia os livros conforme a lógica
         def rename_books(book):
             if '-SD' in book:
                 return 'Sérgio Dias'
             elif '-AF' in book:
-                return 'AdrianO Fontes'
+                return 'Adriano Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
             else:
