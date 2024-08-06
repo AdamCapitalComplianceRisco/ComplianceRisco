@@ -306,7 +306,7 @@ def fetch_data(query, params):
     return pd.read_sql(query, engine, params=params)
 
 def pnl_dashboard():
-    st.title('PNL')
+    st.title('PNL Analysis by Book')
 
     # Layout de seleção
     col1, col2 = st.columns(2)
