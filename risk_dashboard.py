@@ -346,9 +346,9 @@ def pnl_dashboard():
 
         # Renomeia os livros conforme a lógica
         def rename_books(book):
-            if book.endswith('-SD'):
+            if '-SD' in book:
                 return 'Sérgio Dias'
-            elif book.endswith('-AF'):
+            elif '-AF' in book:
                 return 'AdrianO Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
@@ -408,6 +408,7 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
 
 
 #------------------------------------------------------------------------------------
