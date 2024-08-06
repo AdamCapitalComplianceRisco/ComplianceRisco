@@ -297,7 +297,7 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
-#Conexão com o banco de dados
+# Conexão com o banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
@@ -313,12 +313,19 @@ def pnl_dashboard():
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
+    # Debug: Mostrar o valor de latest_date_str
+    st.write(f"Latest Date String: {latest_date_str}")
+
     if latest_date_str is None:
         st.error('No data available in the database.')
         return
 
-    # Converte a data mais recente para um objeto datetime
-    latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
+    try:
+        # Converte a data mais recente para um objeto datetime
+        latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
+    except ValueError:
+        # Tenta com outro formato de data se o formato acima falhar
+        latest_date = datetime.strptime(latest_date_str, '%d/%m/%Y')
 
     # Layout de seleção
     col1, col2 = st.columns(2)
@@ -353,7 +360,6 @@ def pnl_dashboard():
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.error('No data available for the selected filters.')
-
 #------------------------------------------------------------------------------------
 
 
