@@ -334,7 +334,8 @@ def pnl_dashboard():
         start_date, end_date = st.date_input('Select Date Range', value=default_dates)
 
         # Filtros de seleção
-        books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira")
+        books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
+        books = fetch_data(books_query)
 
         # Debug: Mostrar dados brutos de livros
         st.write("Raw Books Data:", books)
@@ -350,27 +351,31 @@ def pnl_dashboard():
             else:
                 return 'Adam'
 
-        books['Book'] = books['Book'].apply(rename_books)
-        selected_books = st.multiselect('Select Books', books['Book'].unique(), default=books['Book'].unique())
+        books['RenamedBook'] = books['Book'].apply(rename_books)
+        selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
 
         st.write(f"Selected Books: {selected_books}")
 
+        # Mapear os nomes de volta aos valores originais
+        selected_books_original = books[books['RenamedBook'].isin(selected_books)]['Book'].tolist()
+
+        st.write(f"Original Book Names for Query: {selected_books_original}")
+
         # Prepare a consulta SQL
-        if selected_books:
-            query = """
+        if selected_books_original:
+            placeholders = ','.join(['?'] * len(selected_books_original))
+            query = f"""
             SELECT * FROM AdamDB.DBO.Carteira
-            WHERE CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+            WHERE Book IN ({placeholders}) AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
             """
             # Converte os parâmetros para a lista de valores a serem passados na consulta
-            params = [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
+            params = selected_books_original + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
 
             st.write(f"SQL Query: {query}")
             st.write(f"Parameters: {params}")
 
-            # Corrige a consulta para suportar a lista de parâmetros
-            # Use o formato correto para parâmetros
             try:
-                data = fetch_data(query, tuple(params))
+                data = fetch_data(query, params)
                 st.write(f"Data Retrieved: {data.head()}")
             except Exception as e:
                 st.error(f'Error executing query: {e}')
