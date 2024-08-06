@@ -376,7 +376,7 @@ def pnl_dashboard():
         WHERE Book IN ({','.join(['?']*len(selected_books_original))})
         AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = selected_books_original + [start_date_str, end_date_str]
+        params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
         st.write(f"SQL Query: {query}")
         st.write(f"Parameters: {params}")
@@ -413,7 +413,6 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 
 
 
