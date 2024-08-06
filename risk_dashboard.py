@@ -306,7 +306,7 @@ def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
 def pnl_dashboard():
-    st.title('PNL Analysis by Book')
+    st.title('PNL')
 
     # Buscar a data mais recente disponível na base de dados
     latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
@@ -346,7 +346,7 @@ def pnl_dashboard():
             if '-SD' in book:
                 return 'Sérgio Dias'
             elif '-AF' in book:
-                return 'AdrianO Fontes'
+                return 'Adriano Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
             else:
