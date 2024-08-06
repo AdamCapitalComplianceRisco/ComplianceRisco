@@ -333,9 +333,9 @@ def pnl_dashboard():
         default_dates = (latest_date - timedelta(days=182), latest_date)
         start_date, end_date = st.date_input('Select Date Range', value=default_dates)
 
-        # Formatar as datas no formato dd/MM/yyyy
-        start_date_str = start_date.strftime('%d/%m/%Y')
-        end_date_str = end_date.strftime('%d/%m/%Y')
+        # Formatar as datas no formato YYYY-MM-DD
+        start_date_str = start_date.strftime('%Y-%m-%d')
+        end_date_str = end_date.strftime('%Y-%m-%d')
 
         # Filtros de seleção
         books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
@@ -360,12 +360,18 @@ def pnl_dashboard():
 
         st.write(f"Selected Books: {selected_books}")
 
+        # Mapear os nomes renomeados de volta para os nomes originais dos livros
+        selected_books_original = books[books['RenamedBook'].isin(selected_books)]['Book'].tolist()
+
+        st.write(f"Original Book Names for Query: {selected_books_original}")
+
         # Obter todos os dados para o intervalo de datas selecionado
-        query = """
+        query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
-        WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        WHERE Book IN ({','.join(['?']*len(selected_books_original))})
+        AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = [start_date_str, end_date_str]
+        params = selected_books_original + [start_date_str, end_date_str]
 
         st.write(f"SQL Query: {query}")
         st.write(f"Parameters: {params}")
