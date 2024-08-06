@@ -346,7 +346,7 @@ def pnl_dashboard():
             if '-SD' in book:
                 return 'Sérgio Dias'
             elif '-AF' in book:
-                return 'Adriano Fontes'
+                return 'AdrianO Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
             else:
