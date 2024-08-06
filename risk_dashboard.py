@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 import pyodbc
 # Configurar o layout da página
 st.set_page_config(layout="wide")
-
+from datetime import datetime, timedelta
 
 
 def home():
@@ -296,6 +296,7 @@ def anomaly_detection():
 
 
 #------------------------------------------------------------------------------------
+
 
 # Conexão com o banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
