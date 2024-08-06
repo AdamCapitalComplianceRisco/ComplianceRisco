@@ -314,7 +314,7 @@ def pnl_dashboard():
     latest_date_str = latest_date_result['LatestDate'][0]
 
     # Debug: Mostrar o valor de latest_date_str e seu tipo
-    st.write(f"Latest Date String: {latest_date_str} (Type: {type(latest_date_str)})")
+
 
     if pd.isna(latest_date_str):
         st.error('No data available in the database.')
@@ -355,7 +355,7 @@ def pnl_dashboard():
         books['RenamedBook'] = books['Book'].apply(rename_books)
         selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
 
-        st.write(f"Selected Books: {selected_books}")
+
 
         # Mapear os nomes renomeados de volta para os nomes originais dos livros
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
@@ -365,7 +365,7 @@ def pnl_dashboard():
 
         selected_books_original = selected_books_filtered['Book'].tolist()
 
-        st.write(f"Original Book Names for Query: {selected_books_original}")
+
 
         # Obter todos os dados para o intervalo de datas selecionado
         query = f"""
@@ -375,8 +375,6 @@ def pnl_dashboard():
         """
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
-        st.write(f"SQL Query: {query}")
-        st.write(f"Parameters: {params}")
 
         try:
             data = fetch_data(query, params)
