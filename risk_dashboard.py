@@ -297,28 +297,42 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
+engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
+
+# Função para buscar dados do banco de dados
+@st.cache_data
+def fetch_data(query):
+    return pd.read_sql(query, engine)
+
 def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
-    try:
-        # Carregar e processar dados
-        pnl_data, figs = risk_functions.pnl_from_sql()
+    # Filtros de seleção
+    books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira")['Book'].tolist()
+    selected_books = st.multiselect('Select Books', books, default=books)
 
-        if pnl_data:
-            # Opções de seleção de Books
-            books = list(pnl_data.keys())
-            selected_book = st.selectbox('Choose Book', books)
+    # Período
+    today = datetime.today()
+    default_dates = (today.replace(month=today.month - 6), today)
+    start_date, end_date = st.date_input('Select Date Range', value=default_dates)
 
-            # Exibir gráfico do Book selecionado
-            if selected_book and selected_book in figs:
-                st.plotly_chart(figs[selected_book], use_container_width=True)
-            else:
-                st.warning("Selected book data not available.")
-        else:
-            st.warning("No data available for analysis.")
+    # Filtro para selecionar datas e Book
+    query = f"""
+    SELECT * FROM AdamDB.DBO.Carteira
+    WHERE Book IN ({','.join(['?' for _ in selected_books])})
+    AND Data BETWEEN ? AND ?
+    """
+    params = selected_books + [start_date, end_date]
+    data = fetch_data(query, params)
 
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
+    if not data.empty:
+        # Gráfico de barras de PNL por Produto
+        fig = px.bar(data, x='Product', y='PL', color='Book', barmode='group',
+                     title='PNL by Product and Book',
+                     labels={'PL': 'PNL', 'Product': 'Product'})
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.error('No data available for the selected filters.')
 
 
 #------------------------------------------------------------------------------------
