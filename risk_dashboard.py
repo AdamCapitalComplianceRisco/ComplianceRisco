@@ -341,7 +341,7 @@ def pnl_dashboard():
             if book.endswith('-SD'):
                 return 'Sérgio Dias'
             elif book.endswith('-AF'):
-                return 'AdrianO Fontes'
+                return 'Adriano Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
             else:
