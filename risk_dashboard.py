@@ -335,7 +335,20 @@ def pnl_dashboard():
 
         # Filtros de seleção
         books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira")
-        selected_books = st.multiselect('Select Books', books['Book'].tolist(), default=books['Book'].tolist())
+
+        # Renomeia os livros conforme a lógica
+        def rename_books(book):
+            if book.endswith('-SD'):
+                return 'Sérgio Dias'
+            elif book.endswith('-AF'):
+                return 'AdrianO Fontes'
+            elif 'Mesa' in book:
+                return 'Mesa'
+            else:
+                return 'Adam'
+
+        books['Book'] = books['Book'].apply(rename_books)
+        selected_books = st.multiselect('Select Books', books['Book'].unique(), default=books['Book'].unique())
 
         # Prepare a consulta SQL
         query = """
@@ -352,6 +365,9 @@ def pnl_dashboard():
         data = fetch_data(query, tuple(params))
 
         if not data.empty:
+            # Renomear os valores dos books novamente no DataFrame de dados
+            data['Book'] = data['Book'].apply(rename_books)
+
             # Agrupando os dados por Product e Book e somando o PNL
             grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
 
