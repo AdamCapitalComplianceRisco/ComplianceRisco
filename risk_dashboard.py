@@ -365,8 +365,6 @@ def pnl_dashboard():
 
         selected_books_original = selected_books_filtered['Book'].tolist()
 
-        st.write(f"Original Book Names for Query: {selected_books_original}")
-
         # Obter todos os dados para o intervalo de datas selecionado
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
