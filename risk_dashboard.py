@@ -325,7 +325,7 @@ def pnl_dashboard():
         # Verifique se latest_date_str é uma string antes de converter
         if isinstance(latest_date_str, str):
             # Converta latest_date_str para datetime
-            latest_date = datetime.strptime(latest_date_str, '%d/%m/%Y')
+            latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
         else:
             # Se latest_date_str não for uma string, trate-o como um datetime.date
             latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
@@ -343,9 +343,12 @@ def pnl_dashboard():
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE Book IN ({})
         AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-        """.format(','.join(['?' for _ in selected_books]))
+        """.format(','.join(['?'] * len(selected_books)))
 
+        # Converte os parâmetros para a lista de valores a serem passados na consulta
         params = selected_books + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
+
+        # Corrige a consulta para suportar a lista de parâmetros
         data = fetch_data(query, params)
 
         if not data.empty:
@@ -364,7 +367,6 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 
 #------------------------------------------------------------------------------------
 
