@@ -327,7 +327,7 @@ def pnl_dashboard():
             latest_date = latest_date.to_pydatetime()  # Converte para datetime se for um Timestamp
 
         # Se latest_date for um objeto datetime.date, converta para datetime
-        if isinstance(latest_date, datetime.date):
+        if isinstance(latest_date, datetime.date) and not isinstance(latest_date, datetime):
             latest_date = datetime(latest_date.year, latest_date.month, latest_date.day)
 
         # Converta latest_date para uma string no formato esperado
