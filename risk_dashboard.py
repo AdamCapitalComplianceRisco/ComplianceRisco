@@ -297,9 +297,6 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
-# Conexão com o banco de dados
-engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
-
 # Função para buscar dados do banco de dados
 @st.cache_data
 def fetch_data(query, params):
@@ -326,7 +323,7 @@ def pnl_dashboard():
     query = f"""
     SELECT * FROM AdamDB.DBO.Carteira
     WHERE Book IN ({','.join(['?' for _ in selected_books])})
-    AND ValDate BETWEEN ? AND ?
+    AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
     """
     params = selected_books + [start_date, end_date]
     data = fetch_data(query, params)
