@@ -10,6 +10,7 @@ from prophet import Prophet
 import os
 from sqlalchemy import create_engine
 import pyodbc
+
 def compute_returns(tickers, dict_tickers):
   yf_data = yf.download(dict_tickers[tickers], period='5y', interval='1d')
   returns = yf_data[['Adj Close']].pct_change().dropna()
