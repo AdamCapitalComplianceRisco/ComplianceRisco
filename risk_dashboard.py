@@ -310,69 +310,55 @@ def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = "SELECT MAX(CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
-    latest_date = latest_date_result['LatestDate'][0]
+    latest_date_str = latest_date_result['LatestDate'][0]
 
-    # Debug: Mostrar o valor de latest_date
-    st.write(f"Latest Date: {latest_date}")
+    # Debug: Mostrar o valor de latest_date_str
+    st.write(f"Latest Date String: {latest_date_str}")
 
-    if latest_date is None:
+    if pd.isna(latest_date_str):
         st.error('No data available in the database.')
         return
 
     try:
-        # Certifique-se de que latest_date é um objeto datetime
-        if isinstance(latest_date, pd.Timestamp):
-            latest_date = latest_date.to_pydatetime()  # Converte para datetime se for um Timestamp
+        # Converta latest_date_str para datetime
+        latest_date = datetime.strptime(latest_date_str, '%d/%m/%Y')
 
-        # Se latest_date for um objeto datetime.date, converta para datetime
-        if isinstance(latest_date, datetime.date) and not isinstance(latest_date, datetime):
-            latest_date = datetime(latest_date.year, latest_date.month, latest_date.day)
-
-        # Converta latest_date para uma string no formato esperado
-        latest_date_str = latest_date.strftime('%Y-%m-%d')
-        latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
-    except ValueError as e:
-        st.error(f'Error parsing date: {latest_date}. Error: {e}')
-        return
-    except Exception as e:
-        st.error(f'An unexpected error occurred: {e}')
-        return
-
-    # Layout de seleção
-    col1, col2 = st.columns(2)
-
-    with col1:
-        # Período
+        # Ajuste o formato das datas
         default_dates = (latest_date - timedelta(days=182), latest_date)
         start_date, end_date = st.date_input('Select Date Range', value=default_dates)
 
-    with col2:
         # Filtros de seleção
         books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira")
         selected_books = st.multiselect('Select Books', books['Book'].tolist(), default=books['Book'].tolist())
 
-    # Filtro para selecionar datas e Book
-    query = f"""
-    SELECT * FROM AdamDB.DBO.Carteira
-    WHERE Book IN ({','.join(['?' for _ in selected_books])})
-    AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-    """
-    params = selected_books + [start_date, end_date]
-    data = fetch_data(query, params)
+        # Filtro para selecionar datas e Book
+        query = """
+        SELECT * FROM AdamDB.DBO.Carteira
+        WHERE Book IN ({})
+        AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        """.format(','.join(['?' for _ in selected_books]))
 
-    if not data.empty:
-        # Agrupando os dados por Product e Book e somando o PNL
-        grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+        params = selected_books + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
+        data = fetch_data(query, params)
 
-        # Gráfico de barras de PNL por Produto
-        fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
-                     title='PNL by Product and Book',
-                     labels={'PL': 'PNL', 'Product': 'Product'})
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.error('No data available for the selected filters.')
+        if not data.empty:
+            # Agrupando os dados por Product e Book e somando o PNL
+            grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+
+            # Gráfico de barras de PNL por Produto
+            fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
+                         title='PNL by Product and Book',
+                         labels={'PL': 'PNL', 'Product': 'Product'})
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.error('No data available for the selected filters.')
+
+    except ValueError as e:
+        st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
+    except Exception as e:
+        st.error(f'An unexpected error occurred: {e}')
 
 #------------------------------------------------------------------------------------
 
