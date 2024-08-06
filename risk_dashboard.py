@@ -355,7 +355,6 @@ def pnl_dashboard():
         books['RenamedBook'] = books['Book'].apply(rename_books)
         selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
 
-        st.write(f"Selected Books: {selected_books}")
 
         # Mapear os nomes renomeados de volta para os nomes originais dos livros
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
