@@ -333,6 +333,10 @@ def pnl_dashboard():
         default_dates = (latest_date - timedelta(days=182), latest_date)
         start_date, end_date = st.date_input('Select Date Range', value=default_dates)
 
+        # Formatar as datas no formato dd/MM/yyyy
+        start_date_str = start_date.strftime('%d/%m/%Y')
+        end_date_str = end_date.strftime('%d/%m/%Y')
+
         # Filtros de seleção
         books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
         books = fetch_data(books_query)
@@ -361,7 +365,7 @@ def pnl_dashboard():
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
+        params = [start_date_str, end_date_str]
 
         st.write(f"SQL Query: {query}")
         st.write(f"Parameters: {params}")
