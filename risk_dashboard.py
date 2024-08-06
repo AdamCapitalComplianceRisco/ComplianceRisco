@@ -297,7 +297,6 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
-
 # Conexão com o banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -338,7 +337,7 @@ def pnl_dashboard():
         books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira")
         selected_books = st.multiselect('Select Books', books['Book'].tolist(), default=books['Book'].tolist())
 
-        # Filtro para selecionar datas e Book
+        # Prepare a consulta SQL
         query = """
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE Book IN ({})
@@ -349,7 +348,8 @@ def pnl_dashboard():
         params = selected_books + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
 
         # Corrige a consulta para suportar a lista de parâmetros
-        data = fetch_data(query, params)
+        # Use o formato correto para parâmetros
+        data = fetch_data(query, tuple(params))
 
         if not data.empty:
             # Agrupando os dados por Product e Book e somando o PNL
