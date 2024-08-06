@@ -297,26 +297,37 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
+# Conexão com o banco de dados
+engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
+
 # Função para buscar dados do banco de dados
 @st.cache_data
-def fetch_data(query, params):
+def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
 def pnl_dashboard():
     st.title('PNL Analysis by Book')
+
+    # Buscar a data mais recente disponível na base de dados
+    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_result = fetch_data(latest_date_query)
+    latest_date = latest_date_result['LatestDate'][0]
+
+    if latest_date is None:
+        st.error('No data available in the database.')
+        return
 
     # Layout de seleção
     col1, col2 = st.columns(2)
 
     with col1:
         # Período
-        today = datetime.today()
-        default_dates = (today - timedelta(days=182), today)
+        default_dates = (latest_date - timedelta(days=182), latest_date)
         start_date, end_date = st.date_input('Select Date Range', value=default_dates)
 
     with col2:
         # Filtros de seleção
-        books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira", [])
+        books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira")
         selected_books = st.multiselect('Select Books', books['Book'].tolist(), default=books['Book'].tolist())
 
     # Filtro para selecionar datas e Book
@@ -339,7 +350,6 @@ def pnl_dashboard():
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.error('No data available for the selected filters.')
-
 #------------------------------------------------------------------------------------
 
 
