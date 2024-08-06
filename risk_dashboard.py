@@ -356,58 +356,49 @@ def pnl_dashboard():
 
         st.write(f"Selected Books: {selected_books}")
 
-        # Mapear os nomes de volta aos valores originais
-        selected_books_original = books[books['RenamedBook'].isin(selected_books)]['Book'].tolist()
+        # Obter todos os dados para o intervalo de datas selecionado
+        query = """
+        SELECT * FROM AdamDB.DBO.Carteira
+        WHERE CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        """
+        params = [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
 
-        st.write(f"Original Book Names for Query: {selected_books_original}")
+        st.write(f"SQL Query: {query}")
+        st.write(f"Parameters: {params}")
 
-        # Prepare a consulta SQL
-        if selected_books_original:
-            placeholders = ','.join(['?'] * len(selected_books_original))
-            query = f"""
-            SELECT * FROM AdamDB.DBO.Carteira
-            WHERE Book IN ({placeholders}) AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-            """
-            # Converte os parâmetros para a lista de valores a serem passados na consulta
-            params = selected_books_original + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
+        try:
+            data = fetch_data(query, params)
+            st.write(f"Data Retrieved: {data.head()}")
+        except Exception as e:
+            st.error(f'Error executing query: {e}')
+            return
 
-            st.write(f"SQL Query: {query}")
-            st.write(f"Parameters: {params}")
+        if not data.empty:
+            # Renomear os valores dos books no DataFrame de dados
+            data['Book'] = data['Book'].apply(rename_books)
 
-            try:
-                data = fetch_data(query, params)
-                st.write(f"Data Retrieved: {data.head()}")
-            except Exception as e:
-                st.error(f'Error executing query: {e}')
-                return
+            # Filtrar os dados conforme os livros selecionados
+            data = data[data['Book'].isin(selected_books)]
 
             if not data.empty:
-                # Renomear os valores dos books novamente no DataFrame de dados
-                data['Book'] = data['Book'].apply(rename_books)
+                # Agrupando os dados por Product e Book e somando o PNL
+                grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
 
-                # Filtrar os dados conforme os livros selecionados
-                data = data[data['Book'].isin(selected_books)]
-
-                if not data.empty:
-                    # Agrupando os dados por Product e Book e somando o PNL
-                    grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
-
-                    # Gráfico de barras de PNL por Produto
-                    fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
-                                 title='PNL by Product and Book',
-                                 labels={'PL': 'PNL', 'Product': 'Product'})
-                    st.plotly_chart(fig, use_container_width=True)
-                else:
-                    st.error('No data available for the selected books.')
+                # Gráfico de barras de PNL por Produto
+                fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
+                             title='PNL by Product and Book',
+                             labels={'PL': 'PNL', 'Product': 'Product'})
+                st.plotly_chart(fig, use_container_width=True)
             else:
-                st.error('No data available for the selected date range.')
+                st.error('No data available for the selected books.')
         else:
-            st.error('No books selected.')
+            st.error('No data available for the selected date range.')
 
     except ValueError as e:
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
 
 #------------------------------------------------------------------------------------
 
