@@ -323,12 +323,12 @@ def pnl_dashboard():
     try:
         # Converte a data mais recente para um objeto datetime
         latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
-    except ValueError:
-        try:
-            latest_date = datetime.strptime(latest_date_str, '%d/%m/%Y')
-        except ValueError:
-            st.error('Date format is incorrect: ' + latest_date_str)
-            return
+    except ValueError as e:
+        st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
+        return
+    except Exception as e:
+        st.error(f'An unexpected error occurred: {e}')
+        return
 
     # Layout de seleção
     col1, col2 = st.columns(2)
@@ -363,6 +363,7 @@ def pnl_dashboard():
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.error('No data available for the selected filters.')
+
 #------------------------------------------------------------------------------------
 
 
