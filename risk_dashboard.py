@@ -297,24 +297,30 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
+# Conexão com o banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
 @st.cache_data
-def fetch_data(query):
-    return pd.read_sql(query, engine)
+def fetch_data(query, params):
+    return pd.read_sql(query, engine, params=params)
 
 def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
-    # Filtros de seleção
-    books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira")['Book'].tolist()
-    selected_books = st.multiselect('Select Books', books, default=books)
+    # Layout de seleção
+    col1, col2 = st.columns(2)
 
-    # Período
-    today = datetime.today()
-    default_dates = (today.replace(month=today.month - 6), today)
-    start_date, end_date = st.date_input('Select Date Range', value=default_dates)
+    with col1:
+        # Período
+        today = datetime.today()
+        default_dates = (today - timedelta(days=182), today)
+        start_date, end_date = st.date_input('Select Date Range', value=default_dates)
+
+    with col2:
+        # Filtros de seleção
+        books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira", [])
+        selected_books = st.multiselect('Select Books', books['Book'].tolist(), default=books['Book'].tolist())
 
     # Filtro para selecionar datas e Book
     query = f"""
