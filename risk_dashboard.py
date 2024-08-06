@@ -306,7 +306,7 @@ def fetch_data(query, params):
     return pd.read_sql(query, engine, params=params)
 
 def pnl_dashboard():
-    st.title('PNL Analysis by Book')
+    st.title('PNL')
 
     # Layout de seleção
     col1, col2 = st.columns(2)
@@ -326,7 +326,7 @@ def pnl_dashboard():
     query = f"""
     SELECT * FROM AdamDB.DBO.Carteira
     WHERE Book IN ({','.join(['?' for _ in selected_books])})
-    AND Data BETWEEN ? AND ?
+    AND ValDate BETWEEN ? AND ?
     """
     params = selected_books + [start_date, end_date]
     data = fetch_data(query, params)
