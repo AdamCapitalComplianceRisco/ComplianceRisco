@@ -336,6 +336,9 @@ def pnl_dashboard():
         # Filtros de seleção
         books = fetch_data("SELECT DISTINCT Book FROM AdamDB.DBO.Carteira")
 
+        # Debug: Mostrar dados brutos de livros
+        st.write("Raw Books Data:", books)
+
         # Renomeia os livros conforme a lógica
         def rename_books(book):
             if book.endswith('-SD'):
@@ -356,12 +359,10 @@ def pnl_dashboard():
         if selected_books:
             query = """
             SELECT * FROM AdamDB.DBO.Carteira
-            WHERE Book IN ({})
-            AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-            """.format(','.join(['?'] * len(selected_books)))
-
+            WHERE CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+            """
             # Converte os parâmetros para a lista de valores a serem passados na consulta
-            params = selected_books + [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
+            params = [start_date.strftime('%d/%m/%Y'), end_date.strftime('%d/%m/%Y')]
 
             st.write(f"SQL Query: {query}")
             st.write(f"Parameters: {params}")
@@ -379,16 +380,22 @@ def pnl_dashboard():
                 # Renomear os valores dos books novamente no DataFrame de dados
                 data['Book'] = data['Book'].apply(rename_books)
 
-                # Agrupando os dados por Product e Book e somando o PNL
-                grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+                # Filtrar os dados conforme os livros selecionados
+                data = data[data['Book'].isin(selected_books)]
 
-                # Gráfico de barras de PNL por Produto
-                fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
-                             title='PNL by Product and Book',
-                             labels={'PL': 'PNL', 'Product': 'Product'})
-                st.plotly_chart(fig, use_container_width=True)
+                if not data.empty:
+                    # Agrupando os dados por Product e Book e somando o PNL
+                    grouped_data = data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+
+                    # Gráfico de barras de PNL por Produto
+                    fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
+                                 title='PNL by Product and Book',
+                                 labels={'PL': 'PNL', 'Product': 'Product'})
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.error('No data available for the selected books.')
             else:
-                st.error('No data available for the selected filters.')
+                st.error('No data available for the selected date range.')
         else:
             st.error('No books selected.')
 
