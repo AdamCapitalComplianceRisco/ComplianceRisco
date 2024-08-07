@@ -400,6 +400,11 @@ def pnl_dashboard():
                 total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
                 total_pnl_by_book.columns = ['Book', 'Total PNL']
 
+                # Criar a tabela com produtos e totais por data
+                total_by_date_product = filtered_data.groupby(['Product', 'ValDate'])['PL'].sum().unstack().fillna(0)
+                total_by_date_product.columns.name = None
+                total_by_date_product.reset_index(inplace=True)
+
                 # Criar colunas para layout
                 col1, col2 = st.columns([3, 1])
 
@@ -410,15 +415,18 @@ def pnl_dashboard():
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
 
+                st.write("Total PNL by Product and Date")
+                st.dataframe(total_by_date_product)
+
             else:
                 st.error('No data available for the selected books.')
         else:
             st.error('No data available for the selected date range.')
+
     except ValueError as e:
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 
 
 #------------------------------------------------------------------------------------
