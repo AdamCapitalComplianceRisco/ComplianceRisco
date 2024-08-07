@@ -334,6 +334,7 @@ def pnl_dashboard():
         return
 
     try:
+        # Verifique se latest_date_str é uma string antes de converter
         if isinstance(latest_date_str, str):
             latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
         else:
@@ -356,10 +357,9 @@ def pnl_dashboard():
 
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
-        WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = tuple(selected_books_original) + (start_date_str, end_date_str)
+        params = (start_date_str, end_date_str)
 
         try:
             data = fetch_data(query, params)
@@ -400,19 +400,11 @@ def pnl_dashboard():
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
 
-                all_dates = pd.date_range(start=start_date, end=end_date).date
-                all_books = selected_books_filtered['RenamedBook'].unique()
-
-                date_book_combinations = pd.MultiIndex.from_product([all_dates, all_books], names=['ValDate', 'Book']).to_frame(index=False)
-
-                filtered_data['ValDate'] = pd.to_datetime(filtered_data['ValDate'], format='%d/%m/%Y').dt.date
-                merged_data = pd.merge(date_book_combinations, filtered_data, how='left', on=['ValDate', 'Book']).fillna(0)
-
-                grouped_data_by_date = merged_data.pivot_table(index='ValDate', columns='Product', values='PL', aggfunc='sum').fillna(0)
+                grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
                 global_total = grouped_data_by_date.sum(axis=0).to_frame().T
-                global_total.index = ['Total Global']
+                global_total.index = ['Global Total']
                 grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
 
                 st.write("Total PNL by Product and Date with Global Total")
@@ -427,7 +419,7 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-        
+
 #------------------------------------------------------------------------------------
 
 
