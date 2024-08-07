@@ -298,7 +298,7 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 
-# Conectar ao banco de dados
+
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -428,6 +428,7 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
 #------------------------------------------------------------------------------------
 
 
