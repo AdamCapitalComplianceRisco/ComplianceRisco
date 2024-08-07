@@ -307,13 +307,13 @@ def fetch_data(query, params=None):
 def rename_books(book):
     if '-SD' in book:
         return 'Sérgio Dias'
-    elif '-AF' in book:
+    elif '- AF' in book:
         return 'Adriano Fontes'
     elif 'Mesa' in book:
         return 'Mesa'
-    elif '-FL' in book:
+    elif '- FL' in book:
         return 'Fábio Landi'
-    elif '-JB' in book:
+    elif '- JB' in book:
         return 'João Bandeira'
     else:
         return 'Adam'
