@@ -424,13 +424,12 @@ def pnl_dashboard():
 
                 with col1:
                     st.plotly_chart(fig, use_container_width=True)
+                    st.write("Total PNL by Product and Date")
+                    st.dataframe(total_pnl_by_product_date)
 
                 with col2:
-                    st.write("Total PNL by Product")
+                    st.write("Total PNL by Book")
                     st.dataframe(total_global_by_product)
-
-                st.write("Total PNL by Product and Date")
-                st.dataframe(total_pnl_by_product_date)
 
             else:
                 st.error('No data available for the selected books.')
