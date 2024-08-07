@@ -395,7 +395,7 @@ def pnl_dashboard():
                 dates_query = f"""
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
-                WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+                WHERE CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
                 ORDER BY ValDate
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
