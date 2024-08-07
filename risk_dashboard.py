@@ -309,9 +309,9 @@ def pnl_dashboard():
 
     # Buscar a data mais recente disponível na base de dados
     latest_date_query = """
-    SELECT DISTINCT TRY_CONVERT(DATE, ValDate, 103) AS ValDate
+    SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
     FROM AdamDB.DBO.Carteira
-    WHERE TRY_CONVERT(DATE, ValDate, 103) IS NOT NULL
+    WHERE CONVERT(DATE, ValDate) IS NOT NULL
     ORDER BY ValDate DESC
     """
     latest_date_result = fetch_data(latest_date_query)
@@ -368,7 +368,7 @@ def pnl_dashboard():
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        AND CONVERT(DATE, ValDate) BETWEEN ? AND ?
         """
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
@@ -400,6 +400,10 @@ def pnl_dashboard():
                              title='PNL by Product and Book',
                              labels={'PL': 'PNL', 'Product': 'Product'})
 
+                # Tabela de total PNL por Book
+                total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
+                total_pnl_by_book.columns = ['Book', 'Total PNL']
+
                 # Tabelas de total global e por data
                 total_pnl_by_product_date = filtered_data.groupby(['Product', 'ValDate'])['PL'].sum().unstack().fillna(0).reset_index()
                 total_global_by_product = filtered_data.groupby('Product')['PL'].sum().reset_index()
@@ -429,7 +433,7 @@ def pnl_dashboard():
 
                 with col2:
                     st.write("Total PNL by Book")
-                    st.dataframe(total_global_by_product)
+                    st.dataframe(total_pnl_by_book)
 
             else:
                 st.error('No data available for the selected books.')
@@ -440,6 +444,7 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
 
 #------------------------------------------------------------------------------------
 
