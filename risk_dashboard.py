@@ -355,10 +355,9 @@ def pnl_dashboard():
 
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
-        WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = tuple(selected_books_original) + (start_date_str, end_date_str)
+        params = (start_date_str, end_date_str)
 
         try:
             data = fetch_data(query, params)
@@ -390,7 +389,6 @@ def pnl_dashboard():
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
 
-                # Selecionar as datas distintas no intervalo de datas
                 dates_query = f"""
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
@@ -399,14 +397,12 @@ def pnl_dashboard():
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
 
-                # Agrupar dados por Product e Date
                 grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
                 st.write("Total PNL by Product and Date")
                 st.dataframe(grouped_data_by_date)
 
-                # Adicionar o total global ao final da tabela
                 global_total = grouped_data_by_date.sum(axis=0).to_frame().T
                 global_total.index = ['Global Total']
                 grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
