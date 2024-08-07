@@ -364,7 +364,7 @@ def pnl_dashboard():
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
 
         # Filtrar apenas os trechos que contêm "-SD", "-AF", "-FL", "-JB" e "Mesa"
-        selected_books_filtered = selected_books_filtered[selected_books_filtered['Book'].str.contains('- SD|[- AF]|[- FL]|[- JB]|Mesa', na=False)]
+        selected_books_filtered = selected_books_filtered[selected_books_filtered['Book'].str.contains('-SD|[-AF]|[-FL]|[-JB]|Mesa', na=False)]
 
         selected_books_original = selected_books_filtered['Book'].tolist()
 
