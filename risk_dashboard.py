@@ -350,6 +350,10 @@ def pnl_dashboard():
                 return 'Adriano Fontes'
             elif 'Mesa' in book:
                 return 'Mesa'
+            elif '-FL' in book:
+                return 'Fábio Landi'
+            elif '-JB' in book:
+                return 'João Bandeira'
             else:
                 return 'Adam'
 
