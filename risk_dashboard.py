@@ -298,6 +298,7 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 
+
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -345,17 +346,11 @@ def pnl_dashboard():
         start_date_str = start_date.strftime('%d/%m/%Y')
         end_date_str = end_date.strftime('%d/%m/%Y')
 
-        # Debug: Exibir datas selecionadas
-        st.write(f'Selected Date Range: {start_date_str} to {end_date_str}')
-
         books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
         selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
-
-        # Debug: Exibir books selecionados
-        st.write(f'Selected Books: {selected_books}')
 
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
         selected_books_original = selected_books_filtered['Book'].tolist()
@@ -413,6 +408,7 @@ def pnl_dashboard():
                 all_dates = pd.date_range(start=start_date, end=end_date).date
                 all_books = selected_books_filtered['RenamedBook'].unique()
 
+                # Criação das combinações de datas e livros
                 date_book_combinations = pd.MultiIndex.from_product([all_dates, all_books], names=['ValDate', 'Book']).to_frame(index=False)
 
                 filtered_data['ValDate'] = pd.to_datetime(filtered_data['ValDate'], format='%d/%m/%Y').dt.date
@@ -439,7 +435,7 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
+        
 #------------------------------------------------------------------------------------
 
 
