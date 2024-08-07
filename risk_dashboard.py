@@ -305,7 +305,7 @@ def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
 def rename_books(book):
-    if '-SD' in book:
+    if '- SD' in book:
         return 'Sérgio Dias'
     elif '- AF' in book:
         return 'Adriano Fontes'
