@@ -298,6 +298,7 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 # Conectar ao banco de dados
+# Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
@@ -372,6 +373,7 @@ def pnl_dashboard():
             if not data.empty:
                 filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
                 grouped_data = filtered_data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+                grouped_data = grouped_data.sort_values(by='PL', ascending=False)
 
                 fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
                              title='PNL by Product and Book',
@@ -399,9 +401,6 @@ def pnl_dashboard():
 
                 grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
-
-                st.write("Total PNL by Product and Date")
-                st.dataframe(grouped_data_by_date)
 
                 global_total = grouped_data_by_date.sum(axis=0).to_frame().T
                 global_total.index = ['Global Total']
