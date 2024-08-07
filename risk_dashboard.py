@@ -345,13 +345,18 @@ def pnl_dashboard():
         start_date_str = start_date.strftime('%d/%m/%Y')
         end_date_str = end_date.strftime('%d/%m/%Y')
 
+        # Debug: Exibir datas selecionadas
+        st.write(f'Selected Date Range: {start_date_str} to {end_date_str}')
+
         books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
         selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
 
-        # Mapear os nomes renomeados de volta para os nomes originais dos livros
+        # Debug: Exibir books selecionados
+        st.write(f'Selected Books: {selected_books}')
+
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
         selected_books_original = selected_books_filtered['Book'].tolist()
 
@@ -401,6 +406,9 @@ def pnl_dashboard():
                 ORDER BY ValDate
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
+
+                # Debug: Exibir datas disponíveis
+                st.write(f'Available Dates: {dates["ValDate"].tolist()}')
 
                 all_dates = pd.date_range(start=start_date, end=end_date).date
                 all_books = selected_books_filtered['RenamedBook'].unique()
