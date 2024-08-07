@@ -395,9 +395,9 @@ def pnl_dashboard():
 
                 # Obter todas as datas dentro do intervalo selecionado
                 dates_query = f"""
-                SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
+                SELECT DISTINCT CONVERT(DATE, ValDate, 103) AS ValDate
                 FROM AdamDB.DBO.Carteira
-                WHERE CONVERT(DATE, ValDate) BETWEEN ? AND ?
+                WHERE CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
                 ORDER BY ValDate
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
