@@ -335,7 +335,6 @@ def pnl_dashboard():
         return
 
     try:
-        # Verifique se latest_date_str é uma string antes de converter
         if isinstance(latest_date_str, str):
             latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
         else:
@@ -358,9 +357,10 @@ def pnl_dashboard():
 
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
-        WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        WHERE Book IN ({','.join(['?']*len(selected_books_original))})
+        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = (start_date_str, end_date_str)
+        params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
         try:
             data = fetch_data(query, params)
@@ -413,7 +413,7 @@ def pnl_dashboard():
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
                 global_total = grouped_data_by_date.sum(axis=0).to_frame().T
-                global_total.index = ['Global Total']
+                global_total.index = ['Total Global']
                 grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
 
                 st.write("Total PNL by Product and Date with Global Total")
