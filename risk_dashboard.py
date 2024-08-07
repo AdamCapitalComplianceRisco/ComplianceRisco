@@ -299,6 +299,7 @@ def anomaly_detection():
 
 
 
+
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -402,13 +403,9 @@ def pnl_dashboard():
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
 
-                # Debug: Exibir datas disponíveis
-                st.write(f'Available Dates: {dates["ValDate"].tolist()}')
-
                 all_dates = pd.date_range(start=start_date, end=end_date).date
                 all_books = selected_books_filtered['RenamedBook'].unique()
 
-                # Criação das combinações de datas e livros
                 date_book_combinations = pd.MultiIndex.from_product([all_dates, all_books], names=['ValDate', 'Book']).to_frame(index=False)
 
                 filtered_data['ValDate'] = pd.to_datetime(filtered_data['ValDate'], format='%d/%m/%Y').dt.date
