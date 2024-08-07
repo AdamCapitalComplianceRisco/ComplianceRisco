@@ -317,7 +317,7 @@ def rename_books(book):
         return 'Mesa'
     elif '-FL' in book:
         return 'Fábio Landi'
-    elif '-JB' in book:
+    elif 'Mesa -JB' in book:
         return 'João Bandeira'
     else:
         return 'Adam'
