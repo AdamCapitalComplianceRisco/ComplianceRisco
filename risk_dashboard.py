@@ -304,6 +304,20 @@ engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapita
 def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
+def rename_books(book):
+    if '-SD' in book:
+        return 'Sérgio Dias'
+    elif '-AF' in book:
+        return 'Adriano Fontes'
+    elif 'Mesa' in book:
+        return 'Mesa'
+    elif '-FL' in book:
+        return 'Fábio Landi'
+    elif '-JB' in book:
+        return 'João Bandeira'
+    else:
+        return 'Adam'
+
 def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
@@ -343,28 +357,14 @@ def pnl_dashboard():
         books = fetch_data(books_query)
 
         # Renomeia os livros conforme a lógica
-        def rename_books(book):
-            if '-SD' in book:
-                return 'Sérgio Dias'
-            elif '-AF' in book:
-                return 'Adriano Fontes'
-            elif 'Mesa' in book:
-                return 'Mesa'
-            elif '-FL' in book:
-                return 'Fábio Landi'
-            elif '-JB' in book:
-                return 'João Bandeira'
-            else:
-                return 'Adam'
-
         books['RenamedBook'] = books['Book'].apply(rename_books)
         selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
 
         # Mapear os nomes renomeados de volta para os nomes originais dos livros
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
 
-        # Filtrar apenas os trechos que contêm "-SD", "-AF" e "Mesa"
-        selected_books_filtered = selected_books_filtered[selected_books_filtered['Book'].str.contains('-SD|[-AF]|Mesa', na=False)]
+        # Filtrar apenas os trechos que contêm "-SD", "-AF", "-FL", "-JB" e "Mesa"
+        selected_books_filtered = selected_books_filtered[selected_books_filtered['Book'].str.contains('-SD|[-AF]|[-FL]|[-JB]|Mesa', na=False)]
 
         selected_books_original = selected_books_filtered['Book'].tolist()
 
@@ -448,7 +448,6 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 
 #------------------------------------------------------------------------------------
 
