@@ -297,6 +297,7 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
+# Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
@@ -322,14 +323,9 @@ def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = """
-    SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
-    FROM AdamDB.DBO.Carteira
-    WHERE CONVERT(DATE, ValDate) IS NOT NULL
-    ORDER BY ValDate DESC
-    """
+    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
-    latest_date_str = latest_date_result['ValDate'].max()
+    latest_date_str = latest_date_result['LatestDate'][0]
 
     if pd.isna(latest_date_str):
         st.error('No data available in the database.')
@@ -338,41 +334,29 @@ def pnl_dashboard():
     try:
         # Verifique se latest_date_str é uma string antes de converter
         if isinstance(latest_date_str, str):
-            # Converta latest_date_str para datetime
             latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
         else:
-            # Se latest_date_str não for uma string, trate-o como um datetime.date
             latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
 
-        # Ajuste o formato das datas
         default_dates = (latest_date - timedelta(days=182), latest_date)
         start_date, end_date = st.date_input('Select Date Range', value=default_dates)
 
-        # Formatar as datas no formato YYYY-MM-DD
         start_date_str = start_date.strftime('%Y-%m-%d')
         end_date_str = end_date.strftime('%Y-%m-%d')
 
-        # Filtros de seleção
         books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
         books = fetch_data(books_query)
 
-        # Renomeia os livros conforme a lógica
         books['RenamedBook'] = books['Book'].apply(rename_books)
         selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
 
-        # Mapear os nomes renomeados de volta para os nomes originais dos livros
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
-
-        # Filtrar apenas os trechos que contêm "-SD", "-AF", "-FL", "-JB" e "Mesa"
-        selected_books_filtered = selected_books_filtered[selected_books_filtered['Book'].str.contains('-SD|[-AF]|[-FL]|[-JB]|Mesa', na=False)]
-
         selected_books_original = selected_books_filtered['Book'].tolist()
 
-        # Obter todos os dados para o intervalo de datas selecionado
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND CONVERT(DATE, ValDate) BETWEEN ? AND ?
+        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
@@ -383,61 +367,52 @@ def pnl_dashboard():
             return
 
         if not data.empty:
-            # Renomear os valores dos books no DataFrame de dados
             data['Book'] = data['Book'].apply(rename_books)
-
-            # Filtrar os dados conforme os livros selecionados
             data = data[data['Book'].isin(selected_books)]
 
             if not data.empty:
-                # Excluir categorias específicas de ProductClass para filtragem
                 filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
-
-                # Agrupando os dados por Product e Book e somando o PNL
                 grouped_data = filtered_data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
 
-                # Ordenar o DataFrame pelo PNL em ordem decrescente
-                grouped_data = grouped_data.sort_values(by='PL', ascending=False)
-
-                # Gráfico de barras de PNL por Produto
                 fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
                              title='PNL by Product and Book',
                              labels={'PL': 'PNL', 'Product': 'Product'})
 
-                # Tabela de total PNL por Book
                 total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
                 total_pnl_by_book.columns = ['Book', 'Total PNL']
 
-                # Tabelas de total global e por data
-                total_pnl_by_product_date = filtered_data.groupby(['Product', 'ValDate'])['PL'].sum().unstack().fillna(0).reset_index()
-                total_global_by_product = filtered_data.groupby('Product')['PL'].sum().reset_index()
-                total_global_by_product.columns = ['Product', 'Total Global']
-
-                # Transpor a tabela para ter datas como linhas e produtos como colunas
-                total_pnl_by_product_date = total_pnl_by_product_date.set_index('Product').T
-                total_pnl_by_product_date.columns.name = None
-                total_pnl_by_product_date = total_pnl_by_product_date.reset_index().rename(columns={'index': 'Date'})
-
-                # Adicionar linha para total global na tabela
-                total_global_row = total_global_by_product.set_index('Product').T
-                total_global_row.columns.name = None
-                total_global_row = total_global_row.reset_index().rename(columns={'index': 'Date'})
-                total_global_row['Date'] = 'Total Global'
-
-                # Adicionar a linha de total global ao final da tabela
-                total_pnl_by_product_date = pd.concat([total_pnl_by_product_date, total_global_row], ignore_index=True)
-
-                # Criar colunas para layout
                 col1, col2 = st.columns([3, 1])
 
                 with col1:
                     st.plotly_chart(fig, use_container_width=True)
-                    st.write("Total PNL by Product and Date")
-                    st.dataframe(total_pnl_by_product_date)
 
                 with col2:
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
+
+                # Selecionar as datas distintas no intervalo de datas
+                dates_query = f"""
+                SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
+                FROM AdamDB.DBO.Carteira
+                WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+                ORDER BY ValDate
+                """
+                dates = fetch_data(dates_query, (start_date_str, end_date_str))
+
+                # Agrupar dados por Product e Date
+                grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
+                grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
+
+                st.write("Total PNL by Product and Date")
+                st.dataframe(grouped_data_by_date)
+
+                # Adicionar o total global ao final da tabela
+                global_total = grouped_data_by_date.sum(axis=0).to_frame().T
+                global_total.index = ['Global Total']
+                grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
+
+                st.write("Total PNL by Product and Date with Global Total")
+                st.dataframe(grouped_data_by_date)
 
             else:
                 st.error('No data available for the selected books.')
