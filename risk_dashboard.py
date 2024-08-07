@@ -298,7 +298,6 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 
-
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -326,7 +325,7 @@ def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
@@ -343,8 +342,8 @@ def pnl_dashboard():
         default_dates = (latest_date - timedelta(days=182), latest_date)
         start_date, end_date = st.date_input('Select Date Range', value=default_dates)
 
-        start_date_str = start_date.strftime('%Y-%m-%d')
-        end_date_str = end_date.strftime('%Y-%m-%d')
+        start_date_str = start_date.strftime('%d/%m/%Y')
+        end_date_str = end_date.strftime('%d/%m/%Y')
 
         books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
         books = fetch_data(books_query)
@@ -358,7 +357,7 @@ def pnl_dashboard():
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
@@ -395,9 +394,9 @@ def pnl_dashboard():
 
                 # Obter todas as datas dentro do intervalo selecionado
                 dates_query = f"""
-                SELECT DISTINCT CONVERT(DATE, ValDate, 103) AS ValDate
+                SELECT DISTINCT TRY_CONVERT(DATE, ValDate, 103) AS ValDate
                 FROM AdamDB.DBO.Carteira
-                WHERE CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+                WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
                 ORDER BY ValDate
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
@@ -431,7 +430,6 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 #------------------------------------------------------------------------------------
 
 
