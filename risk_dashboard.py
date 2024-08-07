@@ -400,35 +400,34 @@ def pnl_dashboard():
                              title='PNL by Product and Book',
                              labels={'PL': 'PNL', 'Product': 'Product'})
 
-                # Somatório do PNL por Book
-                total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
-                total_pnl_by_book.columns = ['Book', 'Total PNL']
+                # Tabelas de total global e por data
+                total_pnl_by_product_date = filtered_data.groupby(['Product', 'ValDate'])['PL'].sum().unstack().fillna(0).reset_index()
+                total_global_by_product = filtered_data.groupby('Product')['PL'].sum().reset_index()
+                total_global_by_product.columns = ['Product', 'Total Global']
 
-                # Criar a tabela com produtos e totais por data
-                total_by_date_product = filtered_data.groupby(['Product', 'ValDate'])['PL'].sum().unstack().fillna(0)
-                total_by_date_product.columns.name = None
-                total_by_date_product.reset_index(inplace=True)
+                # Transpor a tabela para ter datas como linhas e produtos como colunas
+                total_pnl_by_product_date = total_pnl_by_product_date.set_index('Product').T
+                total_pnl_by_product_date.columns.name = None
+                total_pnl_by_product_date = total_pnl_by_product_date.reset_index().rename(columns={'index': 'Date'})
 
-                # Adicionar uma linha para o total global por produto
-                total_global = filtered_data.groupby('Product')['PL'].sum().reset_index()
-                total_global.columns = ['Product', 'Total Global']
+                # Adicionar linha para total global na tabela
+                total_global_row = total_global_by_product.set_index('Product').T
+                total_global_row.columns.name = None
+                total_global_row = total_global_row.reset_index().rename(columns={'index': 'Date'})
+                total_global_row['Date'] = 'Total Global'
+
+                # Adicionar a linha de total global ao final da tabela
+                final_table = pd.concat([total_pnl_by_product_date, total_global_row], ignore_index=True)
 
                 # Criar colunas para layout
-                col1, col2, col3 = st.columns([3, 1, 1])
+                col1, col2 = st.columns([3, 1])
 
                 with col1:
                     st.plotly_chart(fig, use_container_width=True)
 
                 with col2:
-                    st.write("Total PNL by Book")
-                    st.dataframe(total_pnl_by_book)
-
-                with col3:
-                    st.write("Total Global by Product")
-                    st.dataframe(total_global)
-
-                st.write("Total PNL by Product and Date")
-                st.dataframe(total_by_date_product)
+                    st.write("Total PNL by Product and Date")
+                    st.dataframe(final_table)
 
             else:
                 st.error('No data available for the selected books.')
@@ -439,7 +438,6 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 
 #------------------------------------------------------------------------------------
 
