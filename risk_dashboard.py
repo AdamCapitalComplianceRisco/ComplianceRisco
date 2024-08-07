@@ -297,7 +297,6 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
-# Configuração do banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
@@ -309,9 +308,14 @@ def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(CONVERT(DATE, ValDate)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = """
+    SELECT DISTINCT TRY_CONVERT(DATE, ValDate, 103) AS ValDate
+    FROM AdamDB.DBO.Carteira
+    WHERE TRY_CONVERT(DATE, ValDate, 103) IS NOT NULL
+    ORDER BY ValDate DESC
+    """
     latest_date_result = fetch_data(latest_date_query)
-    latest_date_str = latest_date_result['LatestDate'][0]
+    latest_date_str = latest_date_result['ValDate'].max()
 
     if pd.isna(latest_date_str):
         st.error('No data available in the database.')
@@ -364,7 +368,7 @@ def pnl_dashboard():
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND CONVERT(DATE, ValDate) BETWEEN ? AND ?
+        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
@@ -405,8 +409,12 @@ def pnl_dashboard():
                 total_by_date_product.columns.name = None
                 total_by_date_product.reset_index(inplace=True)
 
+                # Adicionar uma linha para o total global por produto
+                total_global = filtered_data.groupby('Product')['PL'].sum().reset_index()
+                total_global.columns = ['Product', 'Total Global']
+
                 # Criar colunas para layout
-                col1, col2 = st.columns([3, 1])
+                col1, col2, col3 = st.columns([3, 1, 1])
 
                 with col1:
                     st.plotly_chart(fig, use_container_width=True)
@@ -414,6 +422,10 @@ def pnl_dashboard():
                 with col2:
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
+
+                with col3:
+                    st.write("Total Global by Product")
+                    st.dataframe(total_global)
 
                 st.write("Total PNL by Product and Date")
                 st.dataframe(total_by_date_product)
