@@ -326,7 +326,7 @@ def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(CONVERT(DATE, ValDate) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = "SELECT MAX(CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
@@ -358,7 +358,7 @@ def pnl_dashboard():
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
         WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND CONVERT(DATE, ValDate) BETWEEN ? AND ?
+        AND CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
@@ -393,6 +393,7 @@ def pnl_dashboard():
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
 
+                # Obter todas as datas dentro do intervalo selecionado
                 dates_query = f"""
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
@@ -409,9 +410,11 @@ def pnl_dashboard():
                 filtered_data['ValDate'] = pd.to_datetime(filtered_data['ValDate'], format='%d/%m/%Y').dt.date
                 merged_data = pd.merge(date_book_combinations, filtered_data, how='left', on=['ValDate', 'Book']).fillna(0)
 
+                # Pivot para criar a tabela com produtos como colunas e datas como linhas
                 grouped_data_by_date = merged_data.pivot_table(index='ValDate', columns='Product', values='PL', aggfunc='sum').fillna(0)
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
+                # Adicionar total global
                 global_total = grouped_data_by_date.sum(axis=0).to_frame().T
                 global_total.index = ['Total Global']
                 grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
