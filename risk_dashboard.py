@@ -317,7 +317,7 @@ def rename_books(book):
         return 'Mesa'
     elif '-FL' in book:
         return 'Fábio Landi'
-    elif 'Mesa -JB' in book:
+    elif '-JB' in book:
         return 'João Bandeira'
     else:
         return 'Adam'
@@ -401,7 +401,15 @@ def pnl_dashboard():
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
 
-                grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
+                all_dates = pd.date_range(start=start_date, end=end_date).date
+                all_books = selected_books_filtered['RenamedBook'].unique()
+
+                date_book_combinations = pd.MultiIndex.from_product([all_dates, all_books], names=['ValDate', 'Book']).to_frame(index=False)
+
+                filtered_data['ValDate'] = pd.to_datetime(filtered_data['ValDate'], format='%d/%m/%Y').dt.date
+                merged_data = pd.merge(date_book_combinations, filtered_data, how='left', on=['ValDate', 'Book']).fillna(0)
+
+                grouped_data_by_date = merged_data.pivot_table(index='ValDate', columns='Product', values='PL', aggfunc='sum').fillna(0)
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
                 global_total = grouped_data_by_date.sum(axis=0).to_frame().T
