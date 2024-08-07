@@ -297,7 +297,7 @@ def anomaly_detection():
 
 #------------------------------------------------------------------------------------
 
-# Conectar ao banco de dados
+
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -306,6 +306,7 @@ engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapita
 def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
+# Função para renomear books
 def rename_books(book):
     if '-SD' in book:
         return 'Sérgio Dias'
