@@ -417,7 +417,7 @@ def pnl_dashboard():
                 total_global_row['Date'] = 'Total Global'
 
                 # Adicionar a linha de total global ao final da tabela
-                final_table = pd.concat([total_pnl_by_product_date, total_global_row], ignore_index=True)
+                total_pnl_by_product_date = pd.concat([total_pnl_by_product_date, total_global_row], ignore_index=True)
 
                 # Criar colunas para layout
                 col1, col2 = st.columns([3, 1])
@@ -426,8 +426,11 @@ def pnl_dashboard():
                     st.plotly_chart(fig, use_container_width=True)
 
                 with col2:
-                    st.write("Total PNL by Product and Date")
-                    st.dataframe(final_table)
+                    st.write("Total PNL by Product")
+                    st.dataframe(total_global_by_product)
+
+                st.write("Total PNL by Product and Date")
+                st.dataframe(total_pnl_by_product_date)
 
             else:
                 st.error('No data available for the selected books.')
