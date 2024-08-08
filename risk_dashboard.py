@@ -326,7 +326,7 @@ def PNL():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
@@ -335,10 +335,8 @@ def PNL():
         return
 
     try:
-        if isinstance(latest_date_str, str):
-            latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
-        else:
-            latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
+        # Verifique se latest_date_str é uma string antes de converter
+        latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
 
         default_dates = (latest_date - timedelta(days=182), latest_date)
         start_date, end_date = st.date_input('Select Date Range', value=default_dates, key='unique_date_range_key')
@@ -414,6 +412,10 @@ def PNL():
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
 
+                # Certificar-se de que as datas estão no formato correto
+                dates['ValDate'] = pd.to_datetime(dates['ValDate']).dt.strftime('%Y-%m-%d')
+                filtered_data['FormattedValDate'] = pd.to_datetime(filtered_data['FormattedValDate']).dt.strftime('%Y-%m-%d')
+
                 grouped_data_by_date = filtered_data.groupby(['FormattedValDate', 'Product'])['PL'].sum().unstack().fillna(0)
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
@@ -433,6 +435,7 @@ def PNL():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
 
 #------------------------------------------------------------------------------------
 
