@@ -298,7 +298,7 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 
-# Conectar ao banco de dados
+
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -326,7 +326,7 @@ def PNL():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
