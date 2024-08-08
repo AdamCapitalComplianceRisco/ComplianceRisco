@@ -299,7 +299,6 @@ def anomaly_detection():
 
 
 
-# Conectar ao banco de dados
 
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
@@ -439,6 +438,149 @@ def PNL():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
+#------------------------------------------------------------------------------------
+
+
+# Conectar ao banco de dados
+engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
+
+# Função para buscar dados do banco de dados
+@st.cache_data(ttl=3600)
+def fetch_data(query, params=None):
+    return pd.read_sql(query, engine, params=params)
+
+# Função para renomear livros
+def rename_books(book):
+    if '-SD' in book:
+        return 'Sérgio Dias'
+    elif '-AF' in book:
+        return 'Adriano Fontes'
+    elif book.endswith('Mesa'):
+        return 'Mesa'
+    elif '-FL' in book:
+        return 'Fábio Landi'
+    elif '-JB' in book:
+        return 'João Bandeira'
+    else:
+        return 'Adam'
+
+def PNL():
+    st.title('PNL Analysis by Book')
+
+    # Buscar a data mais recente disponível na base de dados
+    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_result = fetch_data(latest_date_query)
+    latest_date_str = latest_date_result['LatestDate'][0]
+
+    if pd.isna(latest_date_str):
+        st.error('No data available in the database.')
+        return
+
+    try:
+        if isinstance(latest_date_str, str):
+            latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
+        else:
+            latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
+
+        default_dates = (latest_date - timedelta(days=182), latest_date)
+        start_date, end_date = st.date_input('Select Date Range', value=default_dates, key='unique_date_range_key')
+
+        start_date_str = start_date.strftime('%Y-%m-%d')
+        end_date_str = end_date.strftime('%Y-%m-%d')
+
+        # Consulta para buscar livros
+        books_query = """
+        SELECT DISTINCT Book 
+        FROM AdamDB.DBO.Carteira 
+        WHERE Book LIKE '%Mesa%' OR Book NOT LIKE '%Mesa%'
+        ORDER BY Book
+        """
+        books = fetch_data(books_query)
+
+        books['RenamedBook'] = books['Book'].apply(rename_books)
+        selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique(), key='unique_select_books_key')
+
+        selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
+        selected_books_original = selected_books_filtered['Book'].tolist()
+
+        if not selected_books_original:
+            st.error('No books selected.')
+            return
+
+        # Formatar a consulta para os dados
+        query = """
+        SELECT *, TRY_CONVERT(DATE, ValDate) AS FormattedValDate
+        FROM AdamDB.DBO.Carteira
+        WHERE Book IN ({})
+        AND TRY_CONVERT(DATE, ValDate) BETWEEN ? AND ?
+        """.format(','.join(['?'] * len(selected_books_original)))
+
+        params = tuple(selected_books_original) + (start_date_str, end_date_str)
+
+        try:
+            data = fetch_data(query, params)
+        except Exception as e:
+            st.error(f'Error executing query: {e}')
+            return
+
+        if not data.empty:
+            data['Book'] = data['Book'].apply(rename_books)
+            data = data[data['Book'].isin(selected_books)]
+
+            if not data.empty:
+                filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
+                grouped_data = filtered_data.groupby(['Product'])['PL'].sum().reset_index()
+                grouped_data = grouped_data.sort_values(by='PL', ascending=False)
+
+                fig = px.bar(grouped_data, x='Product', y='PL',
+                             title='PNL by Product',
+                             labels={'PL': 'PNL', 'Product': 'Product'})
+
+                total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
+                total_pnl_by_book.columns = ['Book', 'Total PNL']
+
+                col1, col2 = st.columns([3, 1])
+
+                with col1:
+                    st.plotly_chart(fig, use_container_width=True)
+
+                with col2:
+                    st.write("Total PNL by Book")
+                    st.dataframe(total_pnl_by_book)
+
+                # Consulta para datas distintas dentro do intervalo selecionado
+                dates_query = """
+                SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
+                FROM AdamDB.DBO.Carteira
+                WHERE TRY_CONVERT(DATE, ValDate) BETWEEN ? AND ?
+                ORDER BY ValDate
+                """
+                dates = fetch_data(dates_query, (start_date_str, end_date_str))
+
+                grouped_data_by_date = filtered_data.groupby(['FormattedValDate', 'Product'])['PL'].sum().unstack().fillna(0)
+                grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
+
+                global_total = grouped_data_by_date.sum(axis=0).to_frame().T
+                global_total.index = ['Global Total']
+                grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
+
+                # Ordenar as datas em ordem crescente
+                grouped_data_by_date = grouped_data_by_date.sort_index()
+
+                st.write("Total PNL by Product and Date with Global Total")
+                st.dataframe(grouped_data_by_date)
+
+            else:
+                st.error('No data available for the selected books.')
+        else:
+            st.error('No data available for the selected date range.')
+
+    except ValueError as e:
+        st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
+    except Exception as e:
+        st.error(f'An unexpected error occurred: {e}')
+
 
 #------------------------------------------------------------------------------------
 
