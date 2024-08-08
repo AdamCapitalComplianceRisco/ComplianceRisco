@@ -300,6 +300,7 @@ def anomaly_detection():
 
 
 
+# Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
@@ -313,12 +314,14 @@ def rename_books(book):
         return 'Sérgio Dias'
     elif '-AF' in book:
         return 'Adriano Fontes'
-    elif 'Mesa' in book:
+    elif book == 'Mesa':
         return 'Mesa'
     elif '-FL' in book:
         return 'Fábio Landi'
     elif '-JB' in book:
         return 'João Bandeira'
+    elif 'Mesa' in book:
+        return 'Mesa'  # Para casos como 'Mesa-XYZ'
     else:
         return 'Adam'
 
@@ -351,7 +354,7 @@ def PNL():
         books_query = """
         SELECT DISTINCT Book 
         FROM AdamDB.DBO.Carteira 
-        WHERE Book LIKE '%Mesa'
+        WHERE Book LIKE '%Mesa' OR Book = 'Mesa'
         ORDER BY Book
         """
         books = fetch_data(books_query)
@@ -362,12 +365,17 @@ def PNL():
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
         selected_books_original = selected_books_filtered['Book'].tolist()
 
+        # Separar os books em diferentes categorias
+        exact_mesa_books = [book for book in selected_books_original if book == 'Mesa']
+        other_books = [book for book in selected_books_original if book != 'Mesa']
+
+        # Consulta para buscar os dados
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
-        WHERE Book IN ({','.join(['?']*len(selected_books_original))})
+        WHERE (Book IN ({','.join(['?']*len(other_books))}) OR Book = 'Mesa')
         AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = tuple(selected_books_original) + (start_date_str, end_date_str)
+        params = tuple(other_books) + (start_date_str, end_date_str)
 
         try:
             data = fetch_data(query, params)
@@ -434,7 +442,7 @@ def PNL():
 def main():
     st.sidebar.title('Risk Analysis Dashboard')
     st.sidebar.markdown('---')
-    menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection','PNL']
+    menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection','PNL',Liquidez'']
     choice = st.sidebar.radio('Window', menu_list)
 
 
@@ -448,6 +456,8 @@ def main():
         model_comparison()
     if choice=='Anomaly Detection':
         anomaly_detection()
+    if choice=='PNL':
+        PNL()
     if choice=='PNL':
         PNL()
 
