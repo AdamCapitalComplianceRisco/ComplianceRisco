@@ -298,7 +298,6 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 
- # Conectar ao banco de dados
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -387,11 +386,11 @@ def PNL():
 
             if not data.empty:
                 filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
-                grouped_data = filtered_data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+                grouped_data = filtered_data.groupby(['Product'])['PL'].sum().reset_index()
                 grouped_data = grouped_data.sort_values(by='PL', ascending=False)
 
-                fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
-                             title='PNL by Product and Book',
+                fig = px.bar(grouped_data, x='Product', y='PL',
+                             title='PNL by Product',
                              labels={'PL': 'PNL', 'Product': 'Product'})
 
                 total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
@@ -433,7 +432,6 @@ def PNL():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 #------------------------------------------------------------------------------------
 
 
