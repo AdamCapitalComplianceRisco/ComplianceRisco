@@ -518,6 +518,8 @@ def main():
         PNL()
     if choice=='PNL':
         PNL()
+    if choice=='Liquidez':
+        Liquidez()
 
 
 main()
