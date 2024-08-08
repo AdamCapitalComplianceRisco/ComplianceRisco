@@ -298,7 +298,7 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 
-# Conectar ao banco de dados
+ # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
@@ -312,7 +312,7 @@ def rename_books(book):
         return 'Sérgio Dias'
     elif '-AF' in book:
         return 'Adriano Fontes'
-    elif book.endswith('Mesa') and not book.endswith('Mesa-SD') and not book.endswith('Mesa-JB'):
+    elif book.endswith('Mesa'):
         return 'Mesa'
     elif '-FL' in book:
         return 'Fábio Landi'
@@ -341,34 +341,36 @@ def PNL():
             latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
 
         default_dates = (latest_date - timedelta(days=182), latest_date)
-        start_date, end_date = st.date_input('Select Date Range', value=default_dates, key='date_range_input')
+        start_date, end_date = st.date_input('Select Date Range', value=default_dates, key='unique_date_range_key')
 
         start_date_str = start_date.strftime('%Y-%m-%d')
         end_date_str = end_date.strftime('%Y-%m-%d')
 
-        # Consulta para buscar todos os livros
-        books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
+        # Consulta para buscar livros que contêm 'Mesa' no nome e outros
+        books_query = """
+        SELECT DISTINCT Book 
+        FROM AdamDB.DBO.Carteira 
+        WHERE Book LIKE '%Mesa%' OR Book NOT LIKE '%Mesa%'
+        ORDER BY Book
+        """
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
-        selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique(), key='books_select')
+        selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique(), key='unique_select_books_key')
 
-        # Ajustar o filtro para a consulta
-        if 'Mesa' in selected_books:
-            book_filter = "Book LIKE '%Mesa' AND Book NOT LIKE '%-Mesa%'"
-        else:
-            selected_books_filtered = [book for book in selected_books if book != 'Mesa']
-            if selected_books_filtered:
-                book_filter = "Book IN ({})".format(','.join(f"'{book}'" for book in selected_books_filtered))
-            else:
-                book_filter = "1=0"  # Nenhum livro selecionado
+        selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
+        selected_books_original = selected_books_filtered['Book'].tolist()
+
+        if not selected_books_original:
+            st.error('No books selected.')
+            return
 
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
-        WHERE {book_filter}
+        WHERE Book IN ({','.join(['?']*len(selected_books_original))})
         AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = (start_date_str, end_date_str)
+        params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
         try:
             data = fetch_data(query, params)
@@ -404,8 +406,7 @@ def PNL():
                 dates_query = f"""
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
-                WHERE {book_filter}
-                AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+                WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
                 ORDER BY ValDate
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
@@ -429,7 +430,7 @@ def PNL():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-        
+
 #------------------------------------------------------------------------------------
 
 
