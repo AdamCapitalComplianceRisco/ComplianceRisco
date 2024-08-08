@@ -481,7 +481,7 @@ def Liquidez():
     # Buscar ativos da tabela DeParaAt que estão presentes na lista de produtos filtrados
     ativos_query = """
     SELECT ativo 
-    FROM DeParaAt 
+    FROM AdamDB.DBO.DeParaAt 
     WHERE ativo IN ({})
     """.format(','.join(['?'] * len(product_list)))
 
