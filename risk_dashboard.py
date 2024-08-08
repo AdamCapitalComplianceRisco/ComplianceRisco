@@ -301,7 +301,6 @@ def anomaly_detection():
 
 
 # Conectar ao banco de dados
-# Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
@@ -315,18 +314,16 @@ def rename_books(book):
         return 'Sérgio Dias'
     elif '-AF' in book:
         return 'Adriano Fontes'
-    elif book == 'Mesa':
+    elif book.endswith('Mesa'):
         return 'Mesa'
     elif '-FL' in book:
         return 'Fábio Landi'
     elif '-JB' in book:
         return 'João Bandeira'
-    elif 'Mesa' in book:
-        return 'Mesa'  # Para casos como 'Mesa-XYZ'
     else:
         return 'Adam'
 
-def PNL():
+def pnl_dashboard():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
@@ -346,91 +343,88 @@ def PNL():
             latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
 
         default_dates = (latest_date - timedelta(days=182), latest_date)
-        start_date, end_date = st.date_input('Select Date Range', value=default_dates, key='unique_date_range')
+        start_date, end_date = st.date_input('Select Date Range', value=default_dates, key='date_range')
 
         start_date_str = start_date.strftime('%Y-%m-%d')
         end_date_str = end_date.strftime('%Y-%m-%d')
 
-        # Consulta para buscar livros que contêm 'Mesa' no nome
-        books_query = """
-        SELECT DISTINCT Book 
-        FROM AdamDB.DBO.Carteira 
-        WHERE Book LIKE '%Mesa' OR Book = 'Mesa'
-        ORDER BY Book
-        """
+        books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
-        selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique(), key='unique_books_multiselect')
+        unique_books = books['RenamedBook'].unique()
 
-        selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
-        selected_books_original = selected_books_filtered['Book'].tolist()
+        for unique_book in unique_books:
+            st.subheader(f"Analysis for {unique_book}")
 
-        # Separar os books em diferentes categorias
-        exact_mesa_books = [book for book in selected_books_original if book == 'Mesa']
-        other_books = [book for book in selected_books_original if book != 'Mesa']
+            if unique_book == 'Mesa':
+                book_filter = "Book LIKE '%Mesa' AND Book NOT LIKE '%-Mesa%'"
+            elif unique_book == 'Adam':
+                book_filter = "Book NOT LIKE '%-SD' AND Book NOT LIKE '%-AF' AND Book NOT LIKE '%-FL' AND Book NOT LIKE '%-JB' AND Book NOT LIKE '%Mesa'"
+            else:
+                book_filter = f"Book LIKE '%-{unique_book.split()[0]}%'"
 
-        # Consulta para buscar os dados
-        query = f"""
-        SELECT * FROM AdamDB.DBO.Carteira
-        WHERE (Book IN ({','.join(['?']*len(other_books))}) OR Book = 'Mesa')
-        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-        """
-        params = tuple(other_books) + (start_date_str, end_date_str)
+            query = f"""
+            SELECT * FROM AdamDB.DBO.Carteira
+            WHERE {book_filter}
+            AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+            """
+            params = (start_date_str, end_date_str)
 
-        try:
-            data = fetch_data(query, params)
-        except Exception as e:
-            st.error(f'Error executing query: {e}')
-            return
-
-        if not data.empty:
-            data['Book'] = data['Book'].apply(rename_books)
-            data = data[data['Book'].isin(selected_books)]
+            try:
+                data = fetch_data(query, params)
+            except Exception as e:
+                st.error(f'Error executing query: {e}')
+                continue
 
             if not data.empty:
-                filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
-                grouped_data = filtered_data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
-                grouped_data = grouped_data.sort_values(by='PL', ascending=False)
+                data['Book'] = data['Book'].apply(rename_books)
+                data = data[data['Book'] == unique_book]
 
-                fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
-                             title='PNL by Product and Book',
-                             labels={'PL': 'PNL', 'Product': 'Product'})
+                if not data.empty:
+                    filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
+                    grouped_data = filtered_data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+                    grouped_data = grouped_data.sort_values(by='PL', ascending=False)
 
-                total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
-                total_pnl_by_book.columns = ['Book', 'Total PNL']
+                    fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
+                                 title=f'PNL by Product and Book for {unique_book}',
+                                 labels={'PL': 'PNL', 'Product': 'Product'})
 
-                col1, col2 = st.columns([3, 1])
+                    total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
+                    total_pnl_by_book.columns = ['Book', 'Total PNL']
 
-                with col1:
-                    st.plotly_chart(fig, use_container_width=True)
+                    col1, col2 = st.columns([3, 1])
 
-                with col2:
-                    st.write("Total PNL by Book")
-                    st.dataframe(total_pnl_by_book)
+                    with col1:
+                        st.plotly_chart(fig, use_container_width=True)
 
-                dates_query = f"""
-                SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
-                FROM AdamDB.DBO.Carteira
-                WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-                ORDER BY ValDate
-                """
-                dates = fetch_data(dates_query, (start_date_str, end_date_str))
+                    with col2:
+                        st.write("Total PNL by Book")
+                        st.dataframe(total_pnl_by_book)
 
-                grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
-                grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
+                    dates_query = f"""
+                    SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
+                    FROM AdamDB.DBO.Carteira
+                    WHERE {book_filter}
+                    AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+                    ORDER BY ValDate
+                    """
+                    dates = fetch_data(dates_query, (start_date_str, end_date_str))
 
-                global_total = grouped_data_by_date.sum(axis=0).to_frame().T
-                global_total.index = ['Global Total']
-                grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
+                    grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
+                    grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
-                st.write("Total PNL by Product and Date with Global Total")
-                st.dataframe(grouped_data_by_date)
+                    global_total = grouped_data_by_date.sum(axis=0).to_frame().T
+                    global_total.index = ['Global Total']
+                    grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
 
+                    st.write(f"Total PNL by Product and Date for {unique_book} with Global Total")
+                    st.dataframe(grouped_data_by_date)
+
+                else:
+                    st.warning(f'No data available for {unique_book}.')
             else:
-                st.error('No data available for the selected books.')
-        else:
-            st.error('No data available for the selected date range.')
+                st.warning(f'No data available for {unique_book}.')
 
     except ValueError as e:
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
@@ -438,7 +432,6 @@ def PNL():
         st.error(f'An unexpected error occurred: {e}')
 
 
-        
 #------------------------------------------------------------------------------------
 
 
