@@ -309,7 +309,7 @@ engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapita
 def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
-# Função para renomear books
+# Função para renomear livros
 def rename_books(book):
     if '-SD' in book:
         return 'Sérgio Dias'
@@ -408,6 +408,7 @@ def PNL():
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
 
+                # Consulta para datas distintas dentro do intervalo selecionado
                 dates_query = """
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
@@ -423,6 +424,9 @@ def PNL():
                 global_total.index = ['Global Total']
                 grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
 
+                # Ordenar as datas em ordem crescente
+                grouped_data_by_date = grouped_data_by_date.sort_index()
+
                 st.write("Total PNL by Product and Date with Global Total")
                 st.dataframe(grouped_data_by_date)
 
@@ -435,6 +439,7 @@ def PNL():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+
 #------------------------------------------------------------------------------------
 
 
