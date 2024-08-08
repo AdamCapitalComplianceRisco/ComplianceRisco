@@ -323,7 +323,7 @@ def rename_books(book):
     else:
         return 'Adam'
 
-def pnl_dashboard():
+def PNL():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
@@ -374,7 +374,7 @@ def pnl_dashboard():
             try:
                 data = fetch_data(query, params)
             except Exception as e:
-                st.error(f'Error executing query: {e}')
+                st.error(f'Error executing query for {unique_book}: {e}')
                 continue
 
             if not data.empty:
@@ -430,7 +430,6 @@ def pnl_dashboard():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 
 #------------------------------------------------------------------------------------
 
