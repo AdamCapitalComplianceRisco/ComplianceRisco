@@ -300,6 +300,7 @@ def anomaly_detection():
 
 
 # Conectar ao banco de dados
+
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -308,7 +309,7 @@ engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapita
 def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
-# Função para renomear livros
+# Função para renomear books
 def rename_books(book):
     if '-SD' in book:
         return 'Sérgio Dias'
@@ -327,7 +328,7 @@ def PNL():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(CONVERT(DATE, ValDate)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
@@ -336,8 +337,10 @@ def PNL():
         return
 
     try:
-        # Verifique se latest_date_str é uma string antes de converter
-        latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
+        if isinstance(latest_date_str, str):
+            latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
+        else:
+            latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
 
         default_dates = (latest_date - timedelta(days=182), latest_date)
         start_date, end_date = st.date_input('Select Date Range', value=default_dates, key='unique_date_range_key')
@@ -366,10 +369,10 @@ def PNL():
 
         # Formatar a consulta para os dados
         query = """
-        SELECT *, CONVERT(DATE, ValDate) AS FormattedValDate
+        SELECT *, TRY_CONVERT(DATE, ValDate, 103) AS FormattedValDate
         FROM AdamDB.DBO.Carteira
         WHERE Book IN ({})
-        AND CONVERT(DATE, ValDate) BETWEEN ? AND ?
+        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """.format(','.join(['?'] * len(selected_books_original)))
 
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
@@ -405,20 +408,14 @@ def PNL():
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
 
-                # Consulta para datas distintas dentro do intervalo selecionado
                 dates_query = """
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
-                WHERE CONVERT(DATE, ValDate) BETWEEN ? AND ?
+                WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
                 ORDER BY ValDate
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
 
-                # Certificar-se de que as datas estão no formato correto
-                dates['ValDate'] = pd.to_datetime(dates['ValDate']).dt.strftime('%Y-%m-%d')
-                filtered_data['FormattedValDate'] = pd.to_datetime(filtered_data['FormattedValDate']).dt.strftime('%Y-%m-%d')
-
-                # Agrupar dados por data e produto
                 grouped_data_by_date = filtered_data.groupby(['FormattedValDate', 'Product'])['PL'].sum().unstack().fillna(0)
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
