@@ -298,8 +298,6 @@ def anomaly_detection():
 #------------------------------------------------------------------------------------
 
 
-
-
 # Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
@@ -348,84 +346,84 @@ def PNL():
         start_date_str = start_date.strftime('%Y-%m-%d')
         end_date_str = end_date.strftime('%Y-%m-%d')
 
+        # Consulta para buscar todos os livros
         books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
-        unique_books = books['RenamedBook'].unique()
+        selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
 
-        for unique_book in unique_books:
-            st.subheader(f"Analysis for {unique_book}")
+        selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
+        selected_books_original = selected_books_filtered['Book'].tolist()
 
-            if unique_book == 'Mesa':
-                book_filter = "Book LIKE '%Mesa' AND Book NOT LIKE '%-Mesa%'"
-            elif unique_book == 'Adam':
-                book_filter = "Book NOT LIKE '%-SD' AND Book NOT LIKE '%-AF' AND Book NOT LIKE '%-FL' AND Book NOT LIKE '%-JB' AND Book NOT LIKE '%Mesa'"
-            else:
-                book_filter = f"Book LIKE '%-{unique_book.split()[0]}%'"
+        # Aplicar o filtro de livro conforme necessário
+        if 'Mesa' in selected_books:
+            book_filter = "Book LIKE '%Mesa' AND Book NOT LIKE '%-Mesa%'"
+        else:
+            selected_books_filtered = [book for book in selected_books_original if not book.endswith('Mesa')]
+            book_filter = "Book IN ({})".format(','.join(f"'{book}'" for book in selected_books_filtered))
 
-            query = f"""
-            SELECT * FROM AdamDB.DBO.Carteira
-            WHERE {book_filter}
-            AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-            """
-            params = (start_date_str, end_date_str)
+        query = f"""
+        SELECT * FROM AdamDB.DBO.Carteira
+        WHERE {book_filter}
+        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        """
+        params = (start_date_str, end_date_str)
 
-            try:
-                data = fetch_data(query, params)
-            except Exception as e:
-                st.error(f'Error executing query for {unique_book}: {e}')
-                continue
+        try:
+            data = fetch_data(query, params)
+        except Exception as e:
+            st.error(f'Error executing query: {e}')
+            return
+
+        if not data.empty:
+            data['Book'] = data['Book'].apply(rename_books)
+            data = data[data['Book'].isin(selected_books)]
 
             if not data.empty:
-                data['Book'] = data['Book'].apply(rename_books)
-                data = data[data['Book'] == unique_book]
+                filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
+                grouped_data = filtered_data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
+                grouped_data = grouped_data.sort_values(by='PL', ascending=False)
 
-                if not data.empty:
-                    filtered_data = data[~data['ProductClass'].isin(['Funds BR', 'Provisions and Costs'])]
-                    grouped_data = filtered_data.groupby(['Product', 'Book'])['PL'].sum().reset_index()
-                    grouped_data = grouped_data.sort_values(by='PL', ascending=False)
+                fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
+                             title='PNL by Product and Book',
+                             labels={'PL': 'PNL', 'Product': 'Product'})
 
-                    fig = px.bar(grouped_data, x='Product', y='PL', color='Book', barmode='group',
-                                 title=f'PNL by Product and Book for {unique_book}',
-                                 labels={'PL': 'PNL', 'Product': 'Product'})
+                total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
+                total_pnl_by_book.columns = ['Book', 'Total PNL']
 
-                    total_pnl_by_book = filtered_data.groupby('Book')['PL'].sum().reset_index()
-                    total_pnl_by_book.columns = ['Book', 'Total PNL']
+                col1, col2 = st.columns([3, 1])
 
-                    col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.plotly_chart(fig, use_container_width=True)
 
-                    with col1:
-                        st.plotly_chart(fig, use_container_width=True)
+                with col2:
+                    st.write("Total PNL by Book")
+                    st.dataframe(total_pnl_by_book)
 
-                    with col2:
-                        st.write("Total PNL by Book")
-                        st.dataframe(total_pnl_by_book)
+                dates_query = f"""
+                SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
+                FROM AdamDB.DBO.Carteira
+                WHERE {book_filter}
+                AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+                ORDER BY ValDate
+                """
+                dates = fetch_data(dates_query, (start_date_str, end_date_str))
 
+                grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
+                grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
-                    dates_query = f"""
-                    SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
-                    FROM AdamDB.DBO.Carteira
-                    WHERE {book_filter}
-                    AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-                    ORDER BY ValDate
-                    """
-                    dates = fetch_data(dates_query, (start_date_str, end_date_str))
+                global_total = grouped_data_by_date.sum(axis=0).to_frame().T
+                global_total.index = ['Global Total']
+                grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
 
-                    grouped_data_by_date = filtered_data.groupby(['ValDate', 'Product'])['PL'].sum().unstack().fillna(0)
-                    grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
+                st.write("Total PNL by Product and Date with Global Total")
+                st.dataframe(grouped_data_by_date)
 
-                    global_total = grouped_data_by_date.sum(axis=0).to_frame().T
-                    global_total.index = ['Global Total']
-                    grouped_data_by_date = pd.concat([grouped_data_by_date, global_total])
-
-                    st.write(f"Total PNL by Product and Date for {unique_book} with Global Total")
-                    st.dataframe(grouped_data_by_date)
-
-                else:
-                    st.warning(f'No data available for {unique_book}.')
             else:
-                st.warning(f'No data available for {unique_book}.')
+                st.error('No data available for the selected books.')
+        else:
+            st.error('No data available for the selected date range.')
 
     except ValueError as e:
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
