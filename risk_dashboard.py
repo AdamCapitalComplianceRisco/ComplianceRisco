@@ -345,7 +345,7 @@ def PNL():
             latest_date = datetime(latest_date_str.year, latest_date_str.month, latest_date_str.day)
 
         default_dates = (latest_date - timedelta(days=182), latest_date)
-        start_date, end_date = st.date_input('Select Date Range', value=default_dates)
+        start_date, end_date = st.date_input('Select Date Range', value=default_dates, key='date_range')
 
         start_date_str = start_date.strftime('%Y-%m-%d')
         end_date_str = end_date.strftime('%Y-%m-%d')
@@ -360,7 +360,7 @@ def PNL():
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
-        selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique())
+        selected_books = st.multiselect('Select Books', books['RenamedBook'].unique(), default=books['RenamedBook'].unique(), key='books_multiselect')
 
         selected_books_filtered = books[books['RenamedBook'].isin(selected_books)]
         selected_books_original = selected_books_filtered['Book'].tolist()
@@ -435,7 +435,6 @@ def PNL():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 #------------------------------------------------------------------------------------
 
 
