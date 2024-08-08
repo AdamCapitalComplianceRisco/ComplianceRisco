@@ -442,7 +442,7 @@ def PNL():
 def main():
     st.sidebar.title('Risk Analysis Dashboard')
     st.sidebar.markdown('---')
-    menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection','PNL',Liquidez'']
+    menu_list=['Home', 'Ticker Info', 'Portfolio Analysis', 'VaR Model Analysis', 'Anomaly Detection','PNL','Liquidez']
     choice = st.sidebar.radio('Window', menu_list)
 
 
