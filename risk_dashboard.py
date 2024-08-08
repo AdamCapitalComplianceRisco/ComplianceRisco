@@ -402,6 +402,7 @@ def PNL():
                         st.write("Total PNL by Book")
                         st.dataframe(total_pnl_by_book)
 
+
                     dates_query = f"""
                     SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                     FROM AdamDB.DBO.Carteira
