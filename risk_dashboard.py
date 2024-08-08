@@ -103,7 +103,7 @@ def home():
                 which can be interpreted as a confidence level. The higher the confidence level required, the
                 lower the quantity of data points flagged as anomalies.
                     ''')
-    with st.expander('pnl_dashboard'):
+    with st.expander('PNL'):
         st.markdown('''
                     An anomaly is an unusual or unexpected event or pattern in data. In the financial markets, anomalies
                     might include sudden spikes or drops in price, unusual trading volumes, or other events
@@ -300,7 +300,6 @@ def anomaly_detection():
 
 
 
-# Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
@@ -323,7 +322,7 @@ def rename_books(book):
     else:
         return 'Adam'
 
-def pnl_dashboard():
+def PNL():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
@@ -348,7 +347,13 @@ def pnl_dashboard():
         start_date_str = start_date.strftime('%Y-%m-%d')
         end_date_str = end_date.strftime('%Y-%m-%d')
 
-        books_query = "SELECT DISTINCT Book FROM AdamDB.DBO.Carteira"
+        # Consulta para buscar livros que contêm 'Mesa' no nome
+        books_query = """
+        SELECT DISTINCT Book 
+        FROM AdamDB.DBO.Carteira 
+        WHERE Book LIKE '%Mesa'
+        ORDER BY Book
+        """
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
@@ -359,9 +364,10 @@ def pnl_dashboard():
 
         query = f"""
         SELECT * FROM AdamDB.DBO.Carteira
-        WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        WHERE Book IN ({','.join(['?']*len(selected_books_original))})
+        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
         """
-        params = (start_date_str, end_date_str)
+        params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
         try:
             data = fetch_data(query, params)
@@ -422,7 +428,6 @@ def pnl_dashboard():
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
 
-
 #------------------------------------------------------------------------------------
 
 
@@ -443,8 +448,8 @@ def main():
         model_comparison()
     if choice=='Anomaly Detection':
         anomaly_detection()
-    if choice=='pnl_dashboard':
-        pnl_dashboard()
+    if choice=='PNL':
+        PNL()
 
 
 main()
