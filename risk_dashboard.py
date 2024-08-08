@@ -299,10 +299,11 @@ def anomaly_detection():
 
 
  # Conectar ao banco de dados
+# Conectar ao banco de dados
 engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapitalsqldb.database.windows.net/AdamDB?driver=ODBC+Driver+17+for+SQL+Server")
 
 # Função para buscar dados do banco de dados
-@st.cache_data
+@st.cache_data(ttl=3600)
 def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
@@ -334,7 +335,6 @@ def PNL():
         return
 
     try:
-        # Verifique se latest_date_str é uma string antes de converter
         if isinstance(latest_date_str, str):
             latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')
         else:
@@ -346,13 +346,8 @@ def PNL():
         start_date_str = start_date.strftime('%Y-%m-%d')
         end_date_str = end_date.strftime('%Y-%m-%d')
 
-        # Consulta para buscar livros que contêm 'Mesa' no nome e outros
-        books_query = """
-        SELECT DISTINCT Book 
-        FROM AdamDB.DBO.Carteira 
-        WHERE Book LIKE '%Mesa%' OR Book NOT LIKE '%Mesa%'
-        ORDER BY Book
-        """
+        # Consulta para buscar livros
+        books_query = get_filtered_books_query()
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
@@ -365,11 +360,7 @@ def PNL():
             st.error('No books selected.')
             return
 
-        query = f"""
-        SELECT * FROM AdamDB.DBO.Carteira
-        WHERE Book IN ({','.join(['?']*len(selected_books_original))})
-        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
-        """
+        query = get_data_query()
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
         try:
