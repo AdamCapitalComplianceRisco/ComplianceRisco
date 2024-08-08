@@ -308,7 +308,7 @@ engine = create_engine("mssql+pyodbc://sqladminadam:qpE3gEF2JF98e2PBg@adamcapita
 def fetch_data(query, params=None):
     return pd.read_sql(query, engine, params=params)
 
-# Função para renomear books
+# Função para renomear livros
 def rename_books(book):
     if '-SD' in book:
         return 'Sérgio Dias'
@@ -327,7 +327,7 @@ def PNL():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = "SELECT MAX(CONVERT(DATE, ValDate)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
@@ -366,10 +366,10 @@ def PNL():
 
         # Formatar a consulta para os dados
         query = """
-        SELECT *, TRY_CONVERT(DATE, ValDate, 103) AS FormattedValDate
+        SELECT *, CONVERT(DATE, ValDate) AS FormattedValDate
         FROM AdamDB.DBO.Carteira
         WHERE Book IN ({})
-        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        AND CONVERT(DATE, ValDate) BETWEEN ? AND ?
         """.format(','.join(['?'] * len(selected_books_original)))
 
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
@@ -405,10 +405,11 @@ def PNL():
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
 
+                # Consulta para datas distintas dentro do intervalo selecionado
                 dates_query = """
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
-                WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+                WHERE CONVERT(DATE, ValDate) BETWEEN ? AND ?
                 ORDER BY ValDate
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
@@ -417,6 +418,7 @@ def PNL():
                 dates['ValDate'] = pd.to_datetime(dates['ValDate']).dt.strftime('%Y-%m-%d')
                 filtered_data['FormattedValDate'] = pd.to_datetime(filtered_data['FormattedValDate']).dt.strftime('%Y-%m-%d')
 
+                # Agrupar dados por data e produto
                 grouped_data_by_date = filtered_data.groupby(['FormattedValDate', 'Product'])['PL'].sum().unstack().fillna(0)
                 grouped_data_by_date['Total'] = grouped_data_by_date.sum(axis=1)
 
@@ -436,7 +438,6 @@ def PNL():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
-
 #------------------------------------------------------------------------------------
 
 
