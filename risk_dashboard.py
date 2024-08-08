@@ -328,7 +328,7 @@ def PNL():
     st.title('PNL Analysis by Book')
 
     # Buscar a data mais recente disponível na base de dados
-    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate, 103)) AS LatestDate FROM AdamDB.DBO.Carteira"
+    latest_date_query = "SELECT MAX(TRY_CONVERT(DATE, ValDate)) AS LatestDate FROM AdamDB.DBO.Carteira"
     latest_date_result = fetch_data(latest_date_query)
     latest_date_str = latest_date_result['LatestDate'][0]
 
@@ -369,10 +369,10 @@ def PNL():
 
         # Formatar a consulta para os dados
         query = """
-        SELECT *, TRY_CONVERT(DATE, ValDate, 103) AS FormattedValDate
+        SELECT *, TRY_CONVERT(DATE, ValDate) AS FormattedValDate
         FROM AdamDB.DBO.Carteira
         WHERE Book IN ({})
-        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        AND TRY_CONVERT(DATE, ValDate) BETWEEN ? AND ?
         """.format(','.join(['?'] * len(selected_books_original)))
 
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
@@ -411,7 +411,7 @@ def PNL():
                 dates_query = """
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
-                WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+                WHERE TRY_CONVERT(DATE, ValDate) BETWEEN ? AND ?
                 ORDER BY ValDate
                 """
                 dates = fetch_data(dates_query, (start_date_str, end_date_str))
