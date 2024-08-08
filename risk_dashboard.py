@@ -347,7 +347,12 @@ def PNL():
         end_date_str = end_date.strftime('%Y-%m-%d')
 
         # Consulta para buscar livros
-        books_query = get_filtered_books_query()
+        books_query = """
+        SELECT DISTINCT Book 
+        FROM AdamDB.DBO.Carteira 
+        WHERE Book LIKE '%Mesa%' OR Book NOT LIKE '%Mesa%'
+        ORDER BY Book
+        """
         books = fetch_data(books_query)
 
         books['RenamedBook'] = books['Book'].apply(rename_books)
@@ -360,7 +365,14 @@ def PNL():
             st.error('No books selected.')
             return
 
-        query = get_data_query()
+        # Formatar a consulta para os dados
+        query = """
+        SELECT * 
+        FROM AdamDB.DBO.Carteira
+        WHERE Book IN ({})
+        AND TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
+        """.format(','.join(['?'] * len(selected_books_original)))
+
         params = tuple(selected_books_original) + (start_date_str, end_date_str)
 
         try:
@@ -394,7 +406,7 @@ def PNL():
                     st.write("Total PNL by Book")
                     st.dataframe(total_pnl_by_book)
 
-                dates_query = f"""
+                dates_query = """
                 SELECT DISTINCT CONVERT(DATE, ValDate) AS ValDate
                 FROM AdamDB.DBO.Carteira
                 WHERE TRY_CONVERT(DATE, ValDate, 103) BETWEEN ? AND ?
