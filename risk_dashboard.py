@@ -312,7 +312,7 @@ def rename_books(book):
         return 'Sérgio Dias'
     elif '-AF' in book:
         return 'Adriano Fontes'
-    elif book.endswith('Mesa'):
+    elif book.endswith('Mesa') and not book.endswith('Mesa-SD') and not book.endswith('Mesa-JB'):
         return 'Mesa'
     elif '-FL' in book:
         return 'Fábio Landi'
@@ -357,7 +357,7 @@ def PNL():
         if 'Mesa' in selected_books:
             book_filter = "Book LIKE '%Mesa' AND Book NOT LIKE '%-Mesa%'"
         else:
-            selected_books_filtered = [book for book in selected_books if not book.endswith('Mesa')]
+            selected_books_filtered = [book for book in selected_books if book != 'Mesa']
             if selected_books_filtered:
                 book_filter = "Book IN ({})".format(','.join(f"'{book}'" for book in selected_books_filtered))
             else:
@@ -429,6 +429,7 @@ def PNL():
         st.error(f'Error parsing date: {latest_date_str}. Error: {e}')
     except Exception as e:
         st.error(f'An unexpected error occurred: {e}')
+        
 #------------------------------------------------------------------------------------
 
 
